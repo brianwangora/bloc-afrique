@@ -1,37 +1,176 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
+
+// ── THEME CONTEXT ─────────────────────────────────────────────
+const ThemeCtx = createContext({ dark: true, toggle: () => {} });
+const useTheme = () => useContext(ThemeCtx);
 
 // ── BRAND TOKENS ──────────────────────────────────────────────
-const C = {
-  void: "#0A0A0A", steel: "#1A1F2E", concrete: "#2C3347",
-  rust: "#C94F1E", amber: "#E8A020", mist: "#8A9AB5",
-  cream: "#F5F0E8", light: "#F8F6F2", rule: "#E0DAD0",
-  green: "#22C55E", white: "#ffffff",
+const DARK = {
+  pageBg:       "#0A0A0A",
+  navBg:        "rgba(10,10,10,0.95)",
+  navBorder:    "rgba(201,79,30,0.2)",
+  sectionAlt:   "#1A1F2E",   // steel
+  sectionDeep:  "#0A0A0A",   // void
+  card:         "#1A1F2E",
+  cardAlt:      "#2C3347",
+  cardBorder:   "#2C3347",
+  headingColor: "#F5F0E8",
+  bodyColor:    "#8A9AB5",
+  mutedColor:   "rgba(138,154,181,0.5)",
+  labelColor:   "#8A9AB5",
+  inputBg:      "#2C3347",
+  inputBorder:  "#2C3347",
+  tickerBg:     "#1A1F2E",
+  proofBg:      "#1A1F2E",
+  proofBorder:  "#2C3347",
+  beforeBg:     "#1A1F2E",
+  afterBg:      "#0F1A10",
+  afterText:    "#9CCBA0",
+  corridorBg:   "#1A1F2E",
+  testimonialBg:"#2C3347",
+  aboutBg:      "#F8F6F2",
+  aboutHeading: "#0A0A0A",
+  aboutBody:    "#4A5A6E",
+  aboutCard:    "#ffffff",
+  aboutBorder:  "#E0DAD0",
+  portalBg:     "#F8F6F2",
+  portalCard:   "#ffffff",
+  portalBorder: "#E0DAD0",
+  portalHead:   "#0A0A0A",
+  portalBody:   "#5A6A7E",
+  portalMuted:  "#6A7A90",
+  footerBg:     "#0A0A0A",
+  footerBorder: "#2C3347",
+  footerText:   "rgba(138,154,181,0.7)",
+  footerMuted:  "rgba(138,154,181,0.4)",
+  gridLine:     "rgba(201,79,30,0.04)",
+  priceFeat:    "#C94F1E",
+  priceFeatTxt: "#F5F0E8",
+  pricePlanBg:  "#1A1F2E",
+  toggleBg:     "#2C3347",
+  toggleIcon:   "#F5F0E8",
+  heroStatColor:"#C94F1E",
 };
 
-// ── GLOBAL STYLES (injected once) ─────────────────────────────
+const LIGHT = {
+  pageBg:       "#F8F6F2",
+  navBg:        "rgba(248,246,242,0.97)",
+  navBorder:    "rgba(201,79,30,0.15)",
+  sectionAlt:   "#EDEAE3",
+  sectionDeep:  "#F8F6F2",
+  card:         "#ffffff",
+  cardAlt:      "#F0EDE6",
+  cardBorder:   "#E0DAD0",
+  headingColor: "#0A0A0A",
+  bodyColor:    "#4A5A6E",
+  mutedColor:   "rgba(74,90,110,0.5)",
+  labelColor:   "#6A7A90",
+  inputBg:      "#F0EDE6",
+  inputBorder:  "#D0CAC0",
+  tickerBg:     "#EDEAE3",
+  proofBg:      "#EDEAE3",
+  proofBorder:  "#D8D4CC",
+  beforeBg:     "#F0EDE6",
+  afterBg:      "#EAF4EB",
+  afterText:    "#2E6B35",
+  corridorBg:   "#ffffff",
+  testimonialBg:"#F0EDE6",
+  aboutBg:      "#F0EDE6",
+  aboutHeading: "#0A0A0A",
+  aboutBody:    "#4A5A6E",
+  aboutCard:    "#ffffff",
+  aboutBorder:  "#E0DAD0",
+  portalBg:     "#ffffff",
+  portalCard:   "#F8F6F2",
+  portalBorder: "#E0DAD0",
+  portalHead:   "#0A0A0A",
+  portalBody:   "#4A5A6E",
+  portalMuted:  "#6A7A90",
+  footerBg:     "#EDEAE3",
+  footerBorder: "#D8D4CC",
+  footerText:   "#6A7A90",
+  footerMuted:  "#9AA5B4",
+  gridLine:     "rgba(201,79,30,0.06)",
+  priceFeat:    "#C94F1E",
+  priceFeatTxt: "#F5F0E8",
+  pricePlanBg:  "#F0EDE6",
+  toggleBg:     "#1A1F2E",
+  toggleIcon:   "#F5F0E8",
+  heroStatColor:"#C94F1E",
+};
+
+const C_BRAND = {
+  rust: "#C94F1E", amber: "#E8A020", mist: "#8A9AB5",
+  cream: "#F5F0E8", green: "#22C55E", white: "#ffffff",
+  void: "#0A0A0A", steel: "#1A1F2E", concrete: "#2C3347",
+};
+
+// ── GLOBAL STYLES ─────────────────────────────────────────────
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { background: #0A0A0A; color: #F5F0E8; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+  body { font-family: 'DM Sans', sans-serif; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
   @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
   @keyframes scan { 0%,100%{opacity:.15;transform:scaleX(.3)} 50%{opacity:.6;transform:scaleX(1)} }
   @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  @keyframes toggleSlide { from{transform:translateX(0)} to{transform:translateX(22px)} }
   .fade-in { animation: fadeUp 0.7s ease forwards; }
   .scan-line { animation: scan 4s ease-in-out infinite; }
   .ticker-inner { animation: ticker 36s linear infinite; }
   .sdot-live-pulse { animation: pulse 2s ease-in-out infinite; }
 `;
 
-function GlobalStyles() {
+function GlobalStyles({ T }) {
   useEffect(() => {
     const el = document.createElement("style");
     el.textContent = GLOBAL_CSS;
     document.head.appendChild(el);
     return () => document.head.removeChild(el);
   }, []);
+  useEffect(() => {
+    document.body.style.background = T.pageBg;
+    document.body.style.color = T.headingColor;
+  }, [T]);
   return null;
+}
+
+// ── THEME TOGGLE BUTTON ───────────────────────────────────────
+function ThemeToggle() {
+  const { dark, toggle } = useTheme();
+  return (
+    <button
+      onClick={toggle}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      style={{
+        display: "flex", alignItems: "center", gap: 7,
+        background: dark ? C_BRAND.concrete : "#D8D4CC",
+        border: "none", borderRadius: 20, padding: "5px 10px 5px 6px",
+        cursor: "pointer", transition: "background 0.3s", flexShrink: 0,
+      }}
+    >
+      {/* Track + thumb */}
+      <span style={{
+        width: 32, height: 18, borderRadius: 9, background: dark ? C_BRAND.steel : "#BDB8AE",
+        position: "relative", display: "block", transition: "background 0.3s", flexShrink: 0,
+      }}>
+        <span style={{
+          position: "absolute", top: 3, left: dark ? 3 : 15,
+          width: 12, height: 12, borderRadius: "50%",
+          background: dark ? C_BRAND.mist : C_BRAND.rust,
+          transition: "left 0.25s, background 0.25s",
+        }} />
+      </span>
+      <span style={{
+        fontFamily: "'Space Mono',monospace", fontSize: 9,
+        letterSpacing: "0.1em", textTransform: "uppercase",
+        color: dark ? C_BRAND.mist : "#6A7A90",
+      }}>
+        {dark ? "Dark" : "Light"}
+      </span>
+    </button>
+  );
 }
 
 // ── REUSABLE ATOMS ────────────────────────────────────────────
@@ -39,8 +178,8 @@ function BlocMark({ size = 20 }) {
   const s = size / 2 - 1;
   return (
     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:2, width:size, height:size, flexShrink:0 }}>
-      <div style={{ background:C.rust, borderRadius:1, width:s, height:s }} />
-      <div style={{ background:C.concrete, borderRadius:1, width:s, height:s }} />
+      <div style={{ background:C_BRAND.rust, borderRadius:1, width:s, height:s }} />
+      <div style={{ background:C_BRAND.concrete, borderRadius:1, width:s, height:s }} />
       <div style={{ background:"#1E2436", borderRadius:1, width:s, height:s }} />
       <div style={{ background:"#3A4560", borderRadius:1, width:s, height:s }} />
     </div>
@@ -49,29 +188,31 @@ function BlocMark({ size = 20 }) {
 
 function SectionLabel({ children }) {
   return (
-    <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:C.rust, marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
-      <span style={{ width:16, height:1, background:C.rust, display:"block", flexShrink:0 }} />
+    <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:C_BRAND.rust, marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
+      <span style={{ width:16, height:1, background:C_BRAND.rust, display:"block", flexShrink:0 }} />
       {children}
     </div>
   );
 }
 
-function SectionH2({ children, light }) {
+function SectionH2({ children, color }) {
+  const { dark } = useTheme();
   return (
-    <h2 style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(36px,5vw,56px)", letterSpacing:"0.04em", lineHeight:1, color: light ? C.void : C.cream, marginBottom:16 }}>
+    <h2 style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(36px,5vw,56px)", letterSpacing:"0.04em", lineHeight:1, color: color || (dark ? C_BRAND.cream : C_BRAND.void), marginBottom:16 }}>
       {children}
     </h2>
   );
 }
 
 function BtnPrimary({ children, onClick, href }) {
-  const s = { background:C.rust, color:C.cream, fontFamily:"'Space Mono',monospace", fontSize:12, letterSpacing:"0.1em", textTransform:"uppercase", padding:"13px 26px", border:"none", borderRadius:2, cursor:"pointer", textDecoration:"none", display:"inline-block", transition:"background 0.2s" };
+  const s = { background:C_BRAND.rust, color:C_BRAND.cream, fontFamily:"'Space Mono',monospace", fontSize:12, letterSpacing:"0.1em", textTransform:"uppercase", padding:"13px 26px", border:"none", borderRadius:2, cursor:"pointer", textDecoration:"none", display:"inline-block", transition:"background 0.2s" };
   if (href) return <a href={href} style={s} target="_blank" rel="noreferrer">{children}</a>;
   return <button style={s} onClick={onClick}>{children}</button>;
 }
 
 function BtnGhost({ children, onClick, href }) {
-  const s = { background:"transparent", color:C.mist, fontFamily:"'Space Mono',monospace", fontSize:12, letterSpacing:"0.1em", textTransform:"uppercase", padding:"12px 26px", border:`1px solid ${C.concrete}`, borderRadius:2, cursor:"pointer", textDecoration:"none", display:"inline-block", transition:"border-color 0.2s" };
+  const { dark } = useTheme();
+  const s = { background:"transparent", color: dark ? C_BRAND.mist : "#6A7A90", fontFamily:"'Space Mono',monospace", fontSize:12, letterSpacing:"0.1em", textTransform:"uppercase", padding:"12px 26px", border:`1px solid ${dark ? C_BRAND.concrete : "#C8C4BC"}`, borderRadius:2, cursor:"pointer", textDecoration:"none", display:"inline-block", transition:"border-color 0.2s" };
   if (href) return <a href={href} style={s} target="_blank" rel="noreferrer">{children}</a>;
   return <button style={s} onClick={onClick}>{children}</button>;
 }
@@ -89,66 +230,65 @@ function useInView(threshold = 0.1) {
 
 // ── NAV ──────────────────────────────────────────────────────
 function Nav({ onSignIn }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const links = [["Platform","#platform"],["Corridors","#corridors"],["About","#about"],["Pricing","#pricing"]];
   return (
-    <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(10,10,10,0.95)", backdropFilter:"blur(12px)", borderBottom:`1px solid rgba(201,79,30,0.2)`, padding:"0 40px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+    <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:T.navBg, backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.navBorder}`, padding:"0 40px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between", transition:"background 0.3s, border-color 0.3s" }}>
       <a href="#" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
         <BlocMark size={22} />
-        <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"0.15em", color:C.cream }}>BLOC</span>
+        <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"0.15em", color: dark ? C_BRAND.cream : C_BRAND.void }}> BLOC</span>
       </a>
-      <ul style={{ display:"flex", alignItems:"center", gap:28, listStyle:"none" }}>
-        {links.map(([label, href]) => (
-          <li key={label} style={{ display: mobileOpen ? "block" : undefined }}>
-            <a href={href} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", color:C.mist, textDecoration:"none", textTransform:"uppercase" }}>{label}</a>
-          </li>
-        ))}
-        <li>
-          <button onClick={onSignIn} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", background:C.rust, color:C.cream, padding:"8px 16px", borderRadius:2, border:"none", cursor:"pointer" }}>Sign In</button>
-        </li>
-      </ul>
+      <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+        <ul style={{ display:"flex", alignItems:"center", gap:28, listStyle:"none" }}>
+          {links.map(([label, href]) => (
+            <li key={label}>
+              <a href={href} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", color: dark ? C_BRAND.mist : "#6A7A90", textDecoration:"none", textTransform:"uppercase" }}>{label}</a>
+            </li>
+          ))}
+        </ul>
+        <ThemeToggle />
+        <button onClick={onSignIn} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", background:C_BRAND.rust, color:C_BRAND.cream, padding:"8px 16px", borderRadius:2, border:"none", cursor:"pointer" }}>Sign In</button>
+      </div>
     </nav>
   );
 }
 
 // ── HERO ─────────────────────────────────────────────────────
 function Hero({ onSignIn }) {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   return (
-    <section style={{ minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"0 40px 60px", position:"relative", overflow:"hidden" }}>
-      {/* Grid background */}
-      <div style={{ position:"absolute", inset:0, zIndex:0, backgroundImage:`linear-gradient(rgba(201,79,30,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,79,30,0.04) 1px, transparent 1px)`, backgroundSize:"40px 40px" }} />
-      {/* Scan line */}
-      <div className="scan-line" style={{ position:"absolute", left:0, right:0, top:"48%", height:1, background:`linear-gradient(90deg, transparent, ${C.rust}, transparent)`, zIndex:1 }} />
-
+    <section style={{ minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"0 40px 60px", position:"relative", overflow:"hidden", background: dark ? C_BRAND.void : "#F0EDE6", transition:"background 0.3s" }}>
+      <div style={{ position:"absolute", inset:0, zIndex:0, backgroundImage:`linear-gradient(${T.gridLine} 1px, transparent 1px), linear-gradient(90deg, ${T.gridLine} 1px, transparent 1px)`, backgroundSize:"40px 40px" }} />
+      <div className="scan-line" style={{ position:"absolute", left:0, right:0, top:"48%", height:1, background:`linear-gradient(90deg, transparent, ${C_BRAND.rust}, transparent)`, zIndex:1 }} />
       <div className="fade-in" style={{ position:"relative", zIndex:2, maxWidth:860 }}>
-        <div style={{ fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.15em", color:C.rust, textTransform:"uppercase", marginBottom:16, display:"flex", alignItems:"center", gap:8 }}>
-          <span style={{ width:24, height:1, background:C.rust, display:"block" }} />
+        <div style={{ fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.15em", color:C_BRAND.rust, textTransform:"uppercase", marginBottom:16, display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ width:24, height:1, background:C_BRAND.rust, display:"block" }} />
           Pan-African Trade Infrastructure
         </div>
-        <h1 style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(52px,9vw,108px)", lineHeight:0.92, letterSpacing:"0.02em", color:C.cream, marginBottom:8 }}>
-          Trade Moves<br /><span style={{ color:C.rust }}>On BLOC.</span>
+        <h1 style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(52px,9vw,108px)", lineHeight:0.92, letterSpacing:"0.02em", color: dark ? C_BRAND.cream : C_BRAND.void, marginBottom:8, transition:"color 0.3s" }}>
+          Trade Moves<br /><span style={{ color:C_BRAND.rust }}>On BLOC.</span>
         </h1>
-        <p style={{ fontSize:15, color:C.mist, lineHeight:1.6, maxWidth:520, marginBottom:48, marginTop:20, fontWeight:300 }}>
+        <p style={{ fontSize:15, color: dark ? C_BRAND.mist : "#5A6A7E", lineHeight:1.6, maxWidth:520, marginBottom:48, marginTop:20, fontWeight:300, transition:"color 0.3s" }}>
           End-to-end corridor infrastructure for African cross-border trade — compliance, payments, logistics, and intelligence on one platform.
         </p>
         <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
           <BtnPrimary onClick={onSignIn}>Access Platform →</BtnPrimary>
           <BtnGhost href="#platform">See How It Works</BtnGhost>
         </div>
-        <div style={{ marginTop:20, display:"flex", alignItems:"center", gap:8, fontFamily:"'Space Mono',monospace", fontSize:10, color:C.mist, letterSpacing:"0.08em" }}>
+        <div style={{ marginTop:20, display:"flex", alignItems:"center", gap:8, fontFamily:"'Space Mono',monospace", fontSize:10, color: dark ? C_BRAND.mist : "#6A7A90", letterSpacing:"0.08em" }}>
           <div style={{ width:18, height:18, background:"#25D366", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.128.558 4.122 1.531 5.85L0 24l6.341-1.507A11.951 11.951 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
           </div>
           Also available on WhatsApp — no app download required
         </div>
       </div>
-
-      {/* Hero stats */}
       <div style={{ position:"absolute", right:40, bottom:60, zIndex:2, display:"flex", flexDirection:"column", gap:20, textAlign:"right" }}>
         {[["6","Corridors planned"],["4hr","Clearance target"],["54","AfCFTA markets"]].map(([val, lbl]) => (
           <div key={lbl}>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:32, color:C.rust, lineHeight:1 }}>{val}</div>
-            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C.mist, letterSpacing:"0.12em", textTransform:"uppercase", marginTop:2 }}>{lbl}</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:32, color:C_BRAND.rust, lineHeight:1 }}>{val}</div>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color: dark ? C_BRAND.mist : "#6A7A90", letterSpacing:"0.12em", textTransform:"uppercase", marginTop:2 }}>{lbl}</div>
           </div>
         ))}
       </div>
@@ -169,15 +309,17 @@ const TICKER_ITEMS = [
   { dot:"green", text:"KLA → NBO · EAC DOCS VERIFIED · IN TRANSIT" },
   { dot:"white", text:"TRADE FINANCE · KES 8.2M · FACILITY APPROVED" },
 ];
-const dotColor = { green: C.green, amber: C.amber, white: C.mist };
 
 function Ticker() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
+  const dotColor = { green: C_BRAND.green, amber: C_BRAND.amber, white: dark ? C_BRAND.mist : "#9AA5B4" };
   const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
   return (
-    <div style={{ background:C.steel, borderTop:`1px solid ${C.rust}`, borderBottom:`1px solid rgba(201,79,30,0.2)`, padding:"10px 0", overflow:"hidden" }}>
+    <div style={{ background:T.tickerBg, borderTop:`1px solid ${C_BRAND.rust}`, borderBottom:`1px solid rgba(201,79,30,0.2)`, padding:"10px 0", overflow:"hidden", transition:"background 0.3s" }}>
       <div className="ticker-inner" style={{ display:"flex", width:"max-content" }}>
         {doubled.map((item, i) => (
-          <div key={i} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", color:C.mist, padding:"0 32px", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:8 }}>
+          <div key={i} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", color: dark ? C_BRAND.mist : "#6A7A90", padding:"0 32px", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:8 }}>
             <span style={{ width:5, height:5, borderRadius:1, background: dotColor[item.dot], display:"block", flexShrink:0 }} />
             {item.text}
           </div>
@@ -189,15 +331,17 @@ function Ticker() {
 
 // ── PROOF STRIP ───────────────────────────────────────────────
 function ProofStrip() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const logos = ["Siginon Freight","Maritime Centre","Bollore Logistics","Kenya Freight Services","Transami Kenya","Afrifreight Ltd","Inchcape Shipping","Pan-African Clearing"];
   return (
-    <div style={{ background:C.steel, borderBottom:`1px solid ${C.concrete}`, padding:"32px 40px" }}>
-      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.15em", textTransform:"uppercase", color:C.mist, textAlign:"center", marginBottom:24 }}>
+    <div style={{ background:T.proofBg, borderBottom:`1px solid ${T.proofBorder}`, padding:"32px 40px", transition:"background 0.3s" }}>
+      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.15em", textTransform:"uppercase", color: dark ? C_BRAND.mist : "#6A7A90", textAlign:"center", marginBottom:24 }}>
         Clearing &amp; Forwarding operators on the platform
       </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:16, flexWrap:"wrap" }}>
         {logos.map(l => (
-          <div key={l} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(138,154,181,0.5)", border:"1px solid rgba(138,154,181,0.15)", padding:"7px 14px", borderRadius:2 }}>{l}</div>
+          <div key={l} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color: dark ? "rgba(138,154,181,0.5)" : "rgba(74,90,110,0.6)", border:`1px solid ${dark ? "rgba(138,154,181,0.15)" : "rgba(74,90,110,0.2)"}`, padding:"7px 14px", borderRadius:2 }}>{l}</div>
         ))}
       </div>
     </div>
@@ -223,32 +367,34 @@ const afterItems = [
 ];
 
 function BeforeAfter() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section ref={ref} style={{ background:C.void, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section ref={ref} style={{ background:T.sectionDeep, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>The Case for BLOC</SectionLabel>
       <SectionH2>Before. After.</SectionH2>
-      <p style={{ fontSize:14, color:C.mist, lineHeight:1.7, fontWeight:300, marginBottom:56 }}>The same corridor. A completely different experience.</p>
+      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, fontWeight:300, marginBottom:56, transition:"color 0.3s" }}>The same corridor. A completely different experience.</p>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:2, borderRadius:4, overflow:"hidden" }}>
-        <div style={{ background:C.steel, padding:"40px 36px" }}>
+        <div style={{ background:T.beforeBg, padding:"40px 36px", transition:"background 0.3s" }}>
           <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.15em", textTransform:"uppercase", color:"#EF4444", marginBottom:24, display:"flex", alignItems:"center", gap:8 }}>
             <span>✕</span> Without BLOC
           </div>
           {beforeItems.map((t, i) => (
             <div key={i} style={{ display:"flex", gap:10, marginBottom:14 }}>
               <span style={{ color:"#EF4444", flexShrink:0, marginTop:1 }}>✕</span>
-              <p style={{ fontSize:13, color:C.mist, lineHeight:1.5 }}>{t}</p>
+              <p style={{ fontSize:13, color:T.bodyColor, lineHeight:1.5 }}>{t}</p>
             </div>
           ))}
         </div>
-        <div style={{ background:"#0F1A10", padding:"40px 36px" }}>
-          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.15em", textTransform:"uppercase", color:C.green, marginBottom:24, display:"flex", alignItems:"center", gap:8 }}>
+        <div style={{ background:T.afterBg, padding:"40px 36px", transition:"background 0.3s" }}>
+          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.15em", textTransform:"uppercase", color:C_BRAND.green, marginBottom:24, display:"flex", alignItems:"center", gap:8 }}>
             <span>✓</span> With BLOC
           </div>
           {afterItems.map((t, i) => (
             <div key={i} style={{ display:"flex", gap:10, marginBottom:14 }}>
-              <span style={{ color:C.green, flexShrink:0, marginTop:1 }}>✓</span>
-              <p style={{ fontSize:13, color:"#9CCBA0", lineHeight:1.5 }}>{t}</p>
+              <span style={{ color:C_BRAND.green, flexShrink:0, marginTop:1 }}>✓</span>
+              <p style={{ fontSize:13, color:T.afterText, lineHeight:1.5 }}>{t}</p>
             </div>
           ))}
         </div>
@@ -266,24 +412,26 @@ const HOW_STEPS = [
 ];
 
 function HowItWorks() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section id="platform" ref={ref} style={{ background:C.steel, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section id="platform" ref={ref} style={{ background:T.sectionAlt, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>How It Works</SectionLabel>
       <SectionH2>Source. Pay. Clear.<br />Delivered.</SectionH2>
-      <p style={{ fontSize:14, color:C.mist, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:56 }}>
+      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:56 }}>
         Your money and your goods travel in parallel. BLOC shows you exactly where both are — at every step.
       </p>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:0, position:"relative" }}>
-        <div style={{ position:"absolute", top:28, left:"10%", right:"10%", height:1, background:`linear-gradient(90deg, transparent, ${C.rust}, transparent)`, opacity:0.3 }} />
+        <div style={{ position:"absolute", top:28, left:"10%", right:"10%", height:1, background:`linear-gradient(90deg, transparent, ${C_BRAND.rust}, transparent)`, opacity:0.3 }} />
         {HOW_STEPS.map((s) => (
           <div key={s.num} style={{ padding:"0 20px", textAlign:"center" }}>
-            <div style={{ width:56, height:56, border:`1px solid ${C.rust}`, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:C.rust, background:C.steel, position:"relative", zIndex:1 }}>
+            <div style={{ width:56, height:56, border:`1px solid ${C_BRAND.rust}`, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:C_BRAND.rust, background:T.sectionAlt, position:"relative", zIndex:1, transition:"background 0.3s" }}>
               {s.num}
             </div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"0.08em", color:C.cream, marginBottom:8 }}>{s.title}</div>
-            <p style={{ fontSize:12, color:C.mist, lineHeight:1.6, marginBottom:10 }}>{s.desc}</p>
-            <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C.rust, letterSpacing:"0.08em", textTransform:"uppercase" }}>{s.tag}</span>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"0.08em", color: dark ? C_BRAND.cream : C_BRAND.void, marginBottom:8, transition:"color 0.3s" }}>{s.title}</div>
+            <p style={{ fontSize:12, color:T.bodyColor, lineHeight:1.6, marginBottom:10 }}>{s.desc}</p>
+            <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C_BRAND.rust, letterSpacing:"0.08em", textTransform:"uppercase" }}>{s.tag}</span>
           </div>
         ))}
       </div>
@@ -293,55 +441,27 @@ function HowItWorks() {
 
 // ── PRODUCTS ──────────────────────────────────────────────────
 const PRODUCTS = [
-  {
-    num:"01", name:"Visibility", tag:"All Corridors",
-    desc:"Real-time cargo intelligence from factory gate to Nairobi warehouse. BLOC aggregates data from shipping lines, Kenya Ports Authority, Mombasa Port, and your clearing agent into a single live view. ETA confidence scores are recalculated every 6 hours based on vessel position, port congestion, and historical corridor data.",
-    features:["Live vessel tracking via AIS + shipping line API","ETA scoring with congestion-adjusted forecasts","Automated exception alerts: delays, holds, deviations","Container-level status from vessel to last-mile","Port dwell time analytics by corridor","Historical shipment timeline for every job"],
-    users:["Importer","Clearing Agent","Financier","Transport Operator"],
-  },
-  {
-    num:"02", name:"Compliance", tag:"KenTrade Integrated",
-    desc:"The most time-consuming part of importing is compliance — and the most opaque. BLOC automates HS code classification, calculates exact KRA duty before your goods ship, generates all required documentation, and pre-files with KenTrade so your clearance agent can lodge the moment cargo arrives at Mombasa.",
-    features:["HS code lookup and auto-classification from invoice","KRA duty calculator: import duty, VAT, IDF, RDL","Import permit requirements by product and corridor","KenTrade iCMS pre-lodgement integration","Customs declaration document generation","Certificate of Origin verification for AfCFTA preferential rates"],
-    users:["Clearing Agent","Importer"],
-  },
-  {
-    num:"03", name:"Payments & FX", tag:"M-PESA + Escrow",
-    desc:"Cross-border trade payments are broken for African SMEs. BLOC wraps M-PESA into a multi-corridor settlement layer — a Kamukunji trader pays in KES via M-PESA, their Guangzhou supplier receives RMB, and BLOC holds the difference in escrow until the Bill of Lading is confirmed. FX rates are locked for 48 hours at time of order.",
-    features:["KES → USD → RMB, AED, INR corridor settlement","M-PESA Paybill integration for KES payments","Escrow: funds held until cargo milestone confirmed","FX rate lock for 48 hours — no settlement surprises","Supplier payment via SWIFT or local transfer","Transaction records exportable for VAT filing"],
-    users:["Importer","Clearing Agent","Transport Operator"],
-  },
-  {
-    num:"04", name:"Trade Finance", tag:"DFI Backed",
-    desc:"The biggest constraint for SME importers isn't compliance — it's capital. BLOC embeds container-level trade credit directly into the shipment flow. Apply in-platform, receive a decision in 24 hours, and have funds released to your supplier escrow account before your goods leave the factory.",
-    features:["Container-level import finance up to $50,000 per shipment","24-hour credit decision via BLOC risk score","Repayment triggered by customs clearance confirmation","Invoice financing for clearing agents with large job queues","DFI-backed facility — competitive rates for verified operators","Full credit history and risk profile visible to borrower"],
-    users:["Importer","Financier"],
-  },
-  {
-    num:"05", name:"Logistics Network", tag:"Verified Operators",
-    desc:"BLOC maintains a vetted network of freight forwarders, licensed clearing agents, bonded warehouses, and last-mile truckers — all rated by verified transaction history, not self-reported reviews. Dispatching is built in: clearing agents are assigned automatically based on corridor expertise and current queue load.",
-    features:["Verified clearing agent directory with KRA licence status","Auto-dispatch based on corridor, queue, and rating","Bonded warehouse bookings at Mombasa and Nairobi ICD","Last-mile trucking network from port to destination","Performance ratings from verified clearance data","Freight rate comparison across carriers and corridors"],
-    users:["Importer","Clearing Agent","Transport Operator"],
-  },
-  {
-    num:"06", name:"Trade Intelligence", tag:"Live Data",
-    desc:"Africa's trade operators make decisions with almost no market data. BLOC aggregates transaction-level intelligence across every corridor — duty trends, freight rate movements, port congestion forecasts, commodity price benchmarks, and supplier quality signals.",
-    features:["Duty trend analysis: identify rate changes before they hit","Port congestion forecasting: plan shipments around delays","Commodity price benchmarks by corridor and HS code","Freight rate index: air vs sea vs road by corridor","Supplier quality signals from transaction history","DFI and policy partner data exports for programme design"],
-    users:["Importer","Financier","Clearing Agent"],
-  },
+  { num:"01", name:"Visibility", tag:"All Corridors", desc:"Real-time cargo intelligence from factory gate to Nairobi warehouse. BLOC aggregates data from shipping lines, Kenya Ports Authority, Mombasa Port, and your clearing agent into a single live view. ETA confidence scores are recalculated every 6 hours based on vessel position, port congestion, and historical corridor data.", features:["Live vessel tracking via AIS + shipping line API","ETA scoring with congestion-adjusted forecasts","Automated exception alerts: delays, holds, deviations","Container-level status from vessel to last-mile","Port dwell time analytics by corridor","Historical shipment timeline for every job"], users:["Importer","Clearing Agent","Financier","Transport Operator"] },
+  { num:"02", name:"Compliance", tag:"KenTrade Integrated", desc:"The most time-consuming part of importing is compliance — and the most opaque. BLOC automates HS code classification, calculates exact KRA duty before your goods ship, generates all required documentation, and pre-files with KenTrade so your clearance agent can lodge the moment cargo arrives at Mombasa.", features:["HS code lookup and auto-classification from invoice","KRA duty calculator: import duty, VAT, IDF, RDL","Import permit requirements by product and corridor","KenTrade iCMS pre-lodgement integration","Customs declaration document generation","Certificate of Origin verification for AfCFTA preferential rates"], users:["Clearing Agent","Importer"] },
+  { num:"03", name:"Payments & FX", tag:"M-PESA + Escrow", desc:"Cross-border trade payments are broken for African SMEs. BLOC wraps M-PESA into a multi-corridor settlement layer — a Kamukunji trader pays in KES via M-PESA, their Guangzhou supplier receives RMB, and BLOC holds the difference in escrow until the Bill of Lading is confirmed. FX rates are locked for 48 hours at time of order.", features:["KES → USD → RMB, AED, INR corridor settlement","M-PESA Paybill integration for KES payments","Escrow: funds held until cargo milestone confirmed","FX rate lock for 48 hours — no settlement surprises","Supplier payment via SWIFT or local transfer","Transaction records exportable for VAT filing"], users:["Importer","Clearing Agent","Transport Operator"] },
+  { num:"04", name:"Trade Finance", tag:"DFI Backed", desc:"The biggest constraint for SME importers isn't compliance — it's capital. BLOC embeds container-level trade credit directly into the shipment flow. Apply in-platform, receive a decision in 24 hours, and have funds released to your supplier escrow account before your goods leave the factory.", features:["Container-level import finance up to $50,000 per shipment","24-hour credit decision via BLOC risk score","Repayment triggered by customs clearance confirmation","Invoice financing for clearing agents with large job queues","DFI-backed facility — competitive rates for verified operators","Full credit history and risk profile visible to borrower"], users:["Importer","Financier"] },
+  { num:"05", name:"Logistics Network", tag:"Verified Operators", desc:"BLOC maintains a vetted network of freight forwarders, licensed clearing agents, bonded warehouses, and last-mile truckers — all rated by verified transaction history, not self-reported reviews. Dispatching is built in: clearing agents are assigned automatically based on corridor expertise and current queue load.", features:["Verified clearing agent directory with KRA licence status","Auto-dispatch based on corridor, queue, and rating","Bonded warehouse bookings at Mombasa and Nairobi ICD","Last-mile trucking network from port to destination","Performance ratings from verified clearance data","Freight rate comparison across carriers and corridors"], users:["Importer","Clearing Agent","Transport Operator"] },
+  { num:"06", name:"Trade Intelligence", tag:"Live Data", desc:"Africa's trade operators make decisions with almost no market data. BLOC aggregates transaction-level intelligence across every corridor — duty trends, freight rate movements, port congestion forecasts, commodity price benchmarks, and supplier quality signals.", features:["Duty trend analysis: identify rate changes before they hit","Port congestion forecasting: plan shipments around delays","Commodity price benchmarks by corridor and HS code","Freight rate index: air vs sea vs road by corridor","Supplier quality signals from transaction history","DFI and policy partner data exports for programme design"], users:["Importer","Financier","Clearing Agent"] },
 ];
 
 function Products() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [openIdx, setOpenIdx] = useState(0);
   const [ref, visible] = useInView();
   return (
-    <section ref={ref} style={{ background:C.void, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section ref={ref} style={{ background:T.sectionDeep, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:60, alignItems:"end", marginBottom:64 }}>
         <div>
           <SectionLabel>Platform</SectionLabel>
           <SectionH2>Six Modules.<br />Every Layer<br />of Your Trade.</SectionH2>
         </div>
-        <p style={{ fontSize:14, color:C.mist, lineHeight:1.7, fontWeight:300 }}>
+        <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, fontWeight:300 }}>
           BLOC is not a directory or a logistics booking tool. It's a full-stack operating system for African trade corridors — built from the ground up for the specific friction that kills deals between Nairobi and Guangzhou.
         </p>
       </div>
@@ -349,36 +469,36 @@ function Products() {
         {PRODUCTS.map((p, i) => {
           const isOpen = openIdx === i;
           return (
-            <div key={p.num} style={{ background: isOpen ? "#1E243A" : C.steel, borderLeft: `3px solid ${isOpen ? C.rust : "transparent"}`, transition:"all 0.2s" }}>
+            <div key={p.num} style={{ background: isOpen ? (dark ? "#1E243A" : "#EAE7E0") : T.card, borderLeft:`3px solid ${isOpen ? C_BRAND.rust : "transparent"}`, transition:"all 0.2s" }}>
               <div onClick={() => setOpenIdx(isOpen ? -1 : i)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"24px 28px", cursor:"pointer" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                  <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:C.rust, letterSpacing:"0.1em", width:28 }}>{p.num} ·</span>
-                  <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"0.06em", color:C.cream }}>{p.name}</span>
-                  <span style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", color:C.mist, background:C.concrete, padding:"3px 8px", borderRadius:2 }}>{p.tag}</span>
+                  <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:C_BRAND.rust, letterSpacing:"0.1em", width:28 }}>{p.num} ·</span>
+                  <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"0.06em", color: dark ? C_BRAND.cream : C_BRAND.void }}>{p.name}</span>
+                  <span style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", color:T.bodyColor, background:T.cardAlt, padding:"3px 8px", borderRadius:2 }}>{p.tag}</span>
                 </div>
-                <div style={{ width:20, height:20, border:`1px solid ${isOpen ? C.rust : C.concrete}`, borderRadius:2, background: isOpen ? C.rust : "transparent", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
-                  <span style={{ color: isOpen ? "white" : C.mist, fontSize:14, lineHeight:1, transform: isOpen ? "rotate(45deg)" : "none", display:"block", transition:"transform 0.3s" }}>+</span>
+                <div style={{ width:20, height:20, border:`1px solid ${isOpen ? C_BRAND.rust : T.cardBorder}`, borderRadius:2, background: isOpen ? C_BRAND.rust : "transparent", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
+                  <span style={{ color: isOpen ? "white" : T.bodyColor, fontSize:14, lineHeight:1, transform: isOpen ? "rotate(45deg)" : "none", display:"block", transition:"transform 0.3s" }}>+</span>
                 </div>
               </div>
               {isOpen && (
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:28, padding:"0 28px 28px" }}>
                   <div>
-                    <p style={{ fontSize:13, color:C.mist, lineHeight:1.7, marginBottom:16 }}>{p.desc}</p>
+                    <p style={{ fontSize:13, color:T.bodyColor, lineHeight:1.7, marginBottom:16 }}>{p.desc}</p>
                     <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:8 }}>
                       {p.features.map((f, j) => (
-                        <li key={j} style={{ fontSize:12, color:C.mist, display:"flex", gap:8, lineHeight:1.5 }}>
-                          <span style={{ width:4, height:4, background:C.rust, borderRadius:1, flexShrink:0, marginTop:6 }} />
+                        <li key={j} style={{ fontSize:12, color:T.bodyColor, display:"flex", gap:8, lineHeight:1.5 }}>
+                          <span style={{ width:4, height:4, background:C_BRAND.rust, borderRadius:1, flexShrink:0, marginTop:6 }} />
                           {f}
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <p style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:C.mist, marginBottom:12 }}>Who uses this</p>
+                    <p style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.bodyColor, marginBottom:12 }}>Who uses this</p>
                     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                       {p.users.map(u => (
-                        <span key={u} style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.08em", textTransform:"uppercase", padding:"6px 12px", border:`1px solid ${C.concrete}`, borderRadius:2, color:C.mist, display:"inline-flex", alignItems:"center", gap:6, width:"fit-content" }}>
-                          <span style={{ width:5, height:5, background:C.rust, borderRadius:1 }} />{u}
+                        <span key={u} style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.08em", textTransform:"uppercase", padding:"6px 12px", border:`1px solid ${T.cardBorder}`, borderRadius:2, color:T.bodyColor, display:"inline-flex", alignItems:"center", gap:6, width:"fit-content" }}>
+                          <span style={{ width:5, height:5, background:C_BRAND.rust, borderRadius:1 }} />{u}
                         </span>
                       ))}
                     </div>
@@ -402,14 +522,16 @@ const PILLARS = [
 ];
 
 function About() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section id="about" ref={ref} style={{ background:C.light, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section id="about" ref={ref} style={{ background:T.aboutBg, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>About BLOC</SectionLabel>
-      <SectionH2 light>Built in Nairobi.<br />Built for Trade.</SectionH2>
+      <SectionH2 color={T.aboutHeading}>Built in Nairobi.<br />Built for Trade.</SectionH2>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, marginTop:56, alignItems:"start" }}>
         <div>
-          <div style={{ fontSize:14, color:"#4A5A6E", lineHeight:1.8 }}>
+          <div style={{ fontSize:14, color:T.aboutBody, lineHeight:1.8 }}>
             <p>BLOC was built because African trade is broken in a specific, fixable way. The goods move — containers arrive, duty gets paid, trucks make deliveries — but the infrastructure around them is held together with WhatsApp groups, phone calls, and informal networks that the next generation of traders shouldn't have to depend on.</p>
             <p style={{ marginTop:16 }}>We started with the Kenya-China corridor because it carries the highest volume of SME imports into East Africa, and because the friction is most visible there: a Kamukunji trader placing a $15,000 order in Guangzhou has no visibility, no price certainty, no payment protection, and no credit. BLOC changes that.</p>
             <p style={{ marginTop:16 }}>Our architecture is deliberately infrastructure-level — we don't compete with clearing agents or freight forwarders. We give them better tools and make their clients more confident.</p>
@@ -417,22 +539,22 @@ function About() {
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:2, marginTop:40 }}>
             {[["2024","Founded in Nairobi"],["6","Corridor roadmap"],["4","User types served"],["54","AfCFTA target markets"]].map(([v,l]) => (
-              <div key={l} style={{ background:C.white, padding:24, border:`1px solid ${C.rule}` }}>
-                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:36, color:C.rust, lineHeight:1 }}>{v}</div>
-                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:"#6A7A90", marginTop:4 }}>{l}</div>
+              <div key={l} style={{ background:T.aboutCard, padding:24, border:`1px solid ${T.aboutBorder}` }}>
+                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:36, color:C_BRAND.rust, lineHeight:1 }}>{v}</div>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.aboutBody, marginTop:4 }}>{l}</div>
               </div>
             ))}
           </div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
           {PILLARS.map(p => (
-            <div key={p.title} style={{ background:C.white, border:`1px solid ${C.rule}`, padding:"24px 20px", display:"flex", gap:16, alignItems:"flex-start" }}>
-              <div style={{ width:36, height:36, background:C.light, borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <span style={{ color:C.rust, fontSize:16 }}>◈</span>
+            <div key={p.title} style={{ background:T.aboutCard, border:`1px solid ${T.aboutBorder}`, padding:"24px 20px", display:"flex", gap:16, alignItems:"flex-start" }}>
+              <div style={{ width:36, height:36, background:T.aboutBg, borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <span style={{ color:C_BRAND.rust, fontSize:16 }}>◈</span>
               </div>
               <div>
-                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:C.void, marginBottom:4 }}>{p.title}</div>
-                <p style={{ fontSize:12, color:"#6A7A90", lineHeight:1.5 }}>{p.desc}</p>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:T.aboutHeading, marginBottom:4 }}>{p.title}</div>
+                <p style={{ fontSize:12, color:T.aboutBody, lineHeight:1.5 }}>{p.desc}</p>
               </div>
             </div>
           ))}
@@ -451,31 +573,33 @@ const CORRIDORS = [
   { flags:"🇰🇪 → 🇬🇧", name:"Kenya — UK", status:"planned", badge:"2026", nodes:["NBO","MBA","LHR","FXT"], cargo:"Cut flowers, fresh produce, coffee, tea. UK-Kenya Economic Partnership Agreement." },
   { flags:"🇰🇪 ↔ 🇳🇬🇬🇭", name:"West Africa", status:"planned", badge:"2026", nodes:["NBO","LOS","ACC","ABJ"], cargo:"Cross-Africa manufactured goods, tech, FMCG. AfCFTA intra-Africa tariff elimination." },
 ];
-const statusColor = { live: C.green, soon: C.amber, planned: C.concrete };
+const statusColor = { live: C_BRAND.green, soon: C_BRAND.amber, planned: C_BRAND.concrete };
 
 function Corridors() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section id="corridors" ref={ref} style={{ background:C.void, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section id="corridors" ref={ref} style={{ background:T.sectionAlt, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Active Corridors</SectionLabel>
       <SectionH2>Every Corridor.<br />One Platform.</SectionH2>
-      <p style={{ fontSize:14, color:C.mist, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:56 }}>Six corridors on the roadmap. Each with dedicated compliance rules, FX pairs, and logistics networks built in.</p>
+      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:56 }}>Six corridors on the roadmap. Each with dedicated compliance rules, FX pairs, and logistics networks built in.</p>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2 }}>
         {CORRIDORS.map(c => (
-          <div key={c.name} style={{ background:C.steel, padding:"32px 28px", position:"relative", overflow:"hidden", transition:"background 0.2s" }}>
+          <div key={c.name} style={{ background:T.corridorBg, padding:"32px 28px", position:"relative", overflow:"hidden", border: dark ? "none" : `1px solid ${T.cardBorder}`, transition:"background 0.3s" }}>
             <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background: statusColor[c.status] }} />
             <div style={{ fontSize:28, lineHeight:1, marginBottom:16 }}>{c.flags}</div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, letterSpacing:"0.06em", color:C.cream, marginBottom:6 }}>{c.name}</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, letterSpacing:"0.06em", color: dark ? C_BRAND.cream : C_BRAND.void, marginBottom:6 }}>{c.name}</div>
             <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:16 }}>
               <span className={c.status === "live" ? "sdot-live-pulse" : ""} style={{ width:5, height:5, borderRadius:"50%", background: statusColor[c.status], display:"block" }} />
               <span style={{ color: statusColor[c.status] }}>{c.badge}</span>
             </div>
             <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginBottom:16 }}>
               {c.nodes.map(n => (
-                <span key={n} style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.08em", color:C.mist, padding:"3px 7px", border:`1px solid ${C.concrete}`, borderRadius:2 }}>{n}</span>
+                <span key={n} style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.08em", color:T.bodyColor, padding:"3px 7px", border:`1px solid ${T.cardBorder}`, borderRadius:2 }}>{n}</span>
               ))}
             </div>
-            <p style={{ fontSize:11, color:C.mist, lineHeight:1.6 }}>{c.cargo}</p>
+            <p style={{ fontSize:11, color:T.bodyColor, lineHeight:1.6 }}>{c.cargo}</p>
           </div>
         ))}
       </div>
@@ -492,28 +616,28 @@ const PORTALS = [
 ];
 
 function Portals({ onSignIn }) {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section id="portals" ref={ref} style={{ background:C.light, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section id="portals" ref={ref} style={{ background:T.portalBg, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Access Portal</SectionLabel>
-      <SectionH2 light>Your Corridor.<br />Your Dashboard.</SectionH2>
-      <p style={{ fontSize:14, color:"#5A6A7E", lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:48 }}>Every user type has a dedicated workspace built for their specific role.</p>
+      <SectionH2 color={T.portalHead}>Your Corridor.<br />Your Dashboard.</SectionH2>
+      <p style={{ fontSize:14, color:T.portalBody, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:48 }}>Every user type has a dedicated workspace built for their specific role.</p>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:12 }}>
         {PORTALS.map(p => (
-          <div key={p.title} onClick={() => onSignIn(p.role)} style={{ background:C.white, border:`1px solid ${C.rule}`, borderRadius:2, padding:28, cursor:"pointer", transition:"border-color 0.2s, box-shadow 0.2s", position:"relative" }}>
-            {p.badge && <div style={{ position:"absolute", top:-1, right:16, background:C.rust, color:C.cream, fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", padding:"3px 8px", borderRadius:"0 0 3px 3px" }}>{p.badge}</div>}
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"0.06em", color:C.void, marginBottom:8, marginTop:12 }}>{p.title}</div>
-            <p style={{ fontSize:12, color:"#5A6A7E", lineHeight:1.6, marginBottom:16 }}>{p.desc}</p>
+          <div key={p.title} onClick={() => onSignIn(p.role)} style={{ background:T.portalCard, border:`1px solid ${T.portalBorder}`, borderRadius:2, padding:28, cursor:"pointer", position:"relative", transition:"background 0.3s, border-color 0.2s" }}>
+            {p.badge && <div style={{ position:"absolute", top:-1, right:16, background:C_BRAND.rust, color:C_BRAND.cream, fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", padding:"3px 8px", borderRadius:"0 0 3px 3px" }}>{p.badge}</div>}
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"0.06em", color:T.portalHead, marginBottom:8, marginTop:12 }}>{p.title}</div>
+            <p style={{ fontSize:12, color:T.portalBody, lineHeight:1.6, marginBottom:16 }}>{p.desc}</p>
             <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:6, marginBottom:20 }}>
               {p.features.map(f => (
-                <li key={f} style={{ fontSize:11, color:"#6A7A90", display:"flex", gap:8 }}>
-                  <span style={{ color:C.rust }}>→</span>{f}
+                <li key={f} style={{ fontSize:11, color:T.portalMuted, display:"flex", gap:8 }}>
+                  <span style={{ color:C_BRAND.rust }}>→</span>{f}
                 </li>
               ))}
             </ul>
-            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", color:C.rust, display:"flex", alignItems:"center", gap:6 }}>
-              Sign In →
-            </div>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", color:C_BRAND.rust }}>Sign In →</div>
           </div>
         ))}
       </div>
@@ -529,21 +653,23 @@ const TESTIMONIALS = [
 ];
 
 function Testimonials() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section ref={ref} style={{ background:C.steel, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section ref={ref} style={{ background:T.sectionDeep, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Operator Stories</SectionLabel>
       <SectionH2>What They Said<br />After Their First Shipment.</SectionH2>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginTop:56 }}>
         {TESTIMONIALS.map(t => (
-          <div key={t.name} style={{ background:C.concrete, padding:"32px 28px", borderTop:`3px solid ${C.rust}` }}>
-            <p style={{ fontSize:13, color:C.mist, lineHeight:1.7, marginBottom:24, fontStyle:"italic" }}>{t.body}</p>
+          <div key={t.name} style={{ background:T.testimonialBg, padding:"32px 28px", borderTop:`3px solid ${C_BRAND.rust}`, transition:"background 0.3s" }}>
+            <p style={{ fontSize:13, color:T.bodyColor, lineHeight:1.7, marginBottom:24, fontStyle:"italic" }}>{t.body}</p>
             <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <div style={{ width:40, height:40, background:C.steel, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Space Mono',monospace", fontSize:11, color:C.rust, flexShrink:0 }}>{t.initials}</div>
+              <div style={{ width:40, height:40, background:T.sectionAlt, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Space Mono',monospace", fontSize:11, color:C_BRAND.rust, flexShrink:0 }}>{t.initials}</div>
               <div>
-                <div style={{ fontSize:13, fontWeight:500, color:C.cream }}>{t.name}</div>
-                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C.mist, marginTop:2 }}>{t.role}</div>
-                <span style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", padding:"2px 7px", border:`1px solid ${C.rust}`, borderRadius:2, color:C.rust, display:"inline-block", marginTop:6 }}>{t.pill}</span>
+                <div style={{ fontSize:13, fontWeight:500, color: dark ? C_BRAND.cream : C_BRAND.void }}>{t.name}</div>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.bodyColor, marginTop:2 }}>{t.role}</div>
+                <span style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", padding:"2px 7px", border:`1px solid ${C_BRAND.rust}`, borderRadius:2, color:C_BRAND.rust, display:"inline-block", marginTop:6 }}>{t.pill}</span>
               </div>
             </div>
           </div>
@@ -561,28 +687,30 @@ const PLANS = [
 ];
 
 function Pricing({ onSignIn }) {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section id="pricing" ref={ref} style={{ background:C.void, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section id="pricing" ref={ref} style={{ background:T.sectionAlt, padding:"96px 40px", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Pricing</SectionLabel>
       <SectionH2>Start Free.<br />Pay as You Move.</SectionH2>
-      <p style={{ fontSize:14, color:C.mist, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:56 }}>Every operator type has a plan. No surprise fees — every cost is visible before you commit.</p>
+      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom:56 }}>Every operator type has a plan. No surprise fees — every cost is visible before you commit.</p>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2 }}>
         {PLANS.map(p => (
-          <div key={p.tier} style={{ background: p.featured ? C.rust : C.steel, padding:"36px 28px", position:"relative" }}>
-            {p.featured && <div style={{ position:"absolute", top:0, left:0, right:0, textAlign:"center", fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", background:"rgba(0,0,0,0.2)", padding:"5px 0", color:C.cream }}>Most Popular</div>}
-            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color: p.featured ? "rgba(245,240,232,0.7)" : C.mist, marginBottom:12, marginTop: p.featured ? 20 : 0 }}>{p.tier}</div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:40, color: p.featured ? C.cream : C.cream, lineHeight:1 }}>{p.amount}</div>
-            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color: p.featured ? "rgba(245,240,232,0.6)" : C.mist, marginTop:4, marginBottom:16 }}>{p.period}</div>
-            <p style={{ fontSize:13, color: p.featured ? "rgba(245,240,232,0.8)" : C.mist, lineHeight:1.6, marginBottom:24 }}>{p.desc}</p>
+          <div key={p.tier} style={{ background: p.featured ? C_BRAND.rust : T.pricePlanBg, padding:"36px 28px", position:"relative", transition:"background 0.3s" }}>
+            {p.featured && <div style={{ position:"absolute", top:0, left:0, right:0, textAlign:"center", fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", background:"rgba(0,0,0,0.2)", padding:"5px 0", color:C_BRAND.cream }}>Most Popular</div>}
+            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color: p.featured ? "rgba(245,240,232,0.7)" : T.bodyColor, marginBottom:12, marginTop: p.featured ? 20 : 0 }}>{p.tier}</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:40, color: dark || p.featured ? C_BRAND.cream : C_BRAND.void, lineHeight:1 }}>{p.amount}</div>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color: p.featured ? "rgba(245,240,232,0.6)" : T.bodyColor, marginTop:4, marginBottom:16 }}>{p.period}</div>
+            <p style={{ fontSize:13, color: p.featured ? "rgba(245,240,232,0.8)" : T.bodyColor, lineHeight:1.6, marginBottom:24 }}>{p.desc}</p>
             <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
               {p.features.map(f => (
-                <li key={f} style={{ fontSize:12, color: p.featured ? "rgba(245,240,232,0.85)" : C.mist, display:"flex", gap:8 }}>
-                  <span style={{ color: p.featured ? C.cream : C.rust }}>✓</span>{f}
+                <li key={f} style={{ fontSize:12, color: p.featured ? "rgba(245,240,232,0.85)" : T.bodyColor, display:"flex", gap:8 }}>
+                  <span style={{ color: p.featured ? C_BRAND.cream : C_BRAND.rust }}>✓</span>{f}
                 </li>
               ))}
             </ul>
-            <button onClick={() => onSignIn()} style={{ width:"100%", padding:"13px 0", fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", background: p.featured ? C.cream : "transparent", color: p.featured ? C.rust : C.mist, border: p.featured ? "none" : `1px solid ${C.concrete}`, borderRadius:2, cursor:"pointer" }}>
+            <button onClick={() => onSignIn()} style={{ width:"100%", padding:"13px 0", fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", background: p.featured ? C_BRAND.cream : "transparent", color: p.featured ? C_BRAND.rust : (dark ? C_BRAND.mist : "#6A7A90"), border: p.featured ? "none" : `1px solid ${T.cardBorder}`, borderRadius:2, cursor:"pointer" }}>
               {p.tier === "Starter" ? "Get Started Free" : p.tier === "Enterprise" ? "Talk to Us" : "Start Operator Plan"}
             </button>
           </div>
@@ -594,12 +722,14 @@ function Pricing({ onSignIn }) {
 
 // ── CTA ───────────────────────────────────────────────────────
 function LoginCTA({ onSignIn }) {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [ref, visible] = useInView();
   return (
-    <section ref={ref} style={{ background:C.steel, padding:"96px 40px", textAlign:"center", opacity: visible ? 1 : 0, transition:"opacity 0.7s" }}>
+    <section ref={ref} style={{ background:T.sectionDeep, padding:"96px 40px", textAlign:"center", opacity: visible ? 1 : 0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Get Started</SectionLabel>
       <SectionH2>Ready to move?</SectionH2>
-      <p style={{ fontSize:14, color:C.mist, lineHeight:1.7, maxWidth:380, margin:"16px auto 36px", fontWeight:300 }}>
+      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:380, margin:"16px auto 36px", fontWeight:300 }}>
         Select your role and access your dedicated BLOC dashboard. New operator? Request access and we'll be in touch within 24 hours.
       </p>
       <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
@@ -612,39 +742,41 @@ function LoginCTA({ onSignIn }) {
 
 // ── FOOTER ────────────────────────────────────────────────────
 function Footer() {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const cols = [
     { title:"Platform", links:[["Visibility","#platform"],["Compliance","#platform"],["Payments & FX","#platform"],["Trade Finance","#platform"],["Logistics Network","#platform"],["Trade Intelligence","#platform"]] },
     { title:"Corridors", links:[["Kenya — China","#corridors"],["Kenya — UAE","#corridors"],["Intra-East Africa","#corridors"],["Kenya — India","#corridors"],["Kenya — UK","#corridors"],["West Africa","#corridors"]] },
     { title:"Company", links:[["About","#about"],["Pricing","#pricing"],["Docs & API","#"],["Press","#"],["Privacy Policy","#"],["Terms of Service","#"]] },
   ];
   return (
-    <footer style={{ background:C.void, borderTop:`1px solid ${C.concrete}` }}>
+    <footer style={{ background:T.footerBg, borderTop:`1px solid ${T.footerBorder}`, transition:"background 0.3s" }}>
       <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, padding:"60px 40px 40px" }}>
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
             <BlocMark size={22} />
-            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"0.15em", color:C.cream }}>BLOC</span>
+            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"0.15em", color: dark ? C_BRAND.cream : C_BRAND.void }}> BLOC</span>
           </div>
-          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:C.mist, marginBottom:20 }}>Pan-African Trade Infrastructure</div>
-          <div style={{ fontSize:12, color:C.mist, lineHeight:1.8 }}>
+          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.footerText, marginBottom:20 }}>Pan-African Trade Infrastructure</div>
+          <div style={{ fontSize:12, color:T.footerText, lineHeight:1.8 }}>
             BLOC Platform Ltd<br />Delta Corner, Westlands<br />Nairobi, Kenya 00100<br />
-            <a href="mailto:hello@bloc.trade" style={{ color:C.rust, textDecoration:"none" }}>hello@bloc.trade</a>
+            <a href="mailto:hello@bloc.trade" style={{ color:C_BRAND.rust, textDecoration:"none" }}>hello@bloc.trade</a>
           </div>
         </div>
         {cols.map(col => (
           <div key={col.title}>
-            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", color:C.mist, marginBottom:20 }}>{col.title}</div>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.12em", textTransform:"uppercase", color:T.footerText, marginBottom:20 }}>{col.title}</div>
             <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:10 }}>
               {col.links.map(([label, href]) => (
-                <li key={label}><a href={href} style={{ fontSize:12, color:"rgba(138,154,181,0.7)", textDecoration:"none" }}>{label}</a></li>
+                <li key={label}><a href={href} style={{ fontSize:12, color:T.footerText, textDecoration:"none" }}>{label}</a></li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-      <div style={{ borderTop:`1px solid ${C.concrete}`, padding:"20px 40px", display:"flex", justifyContent:"space-between" }}>
-        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:"rgba(138,154,181,0.4)" }}>© 2025 BLOC Platform Ltd. All rights reserved.</span>
-        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:"rgba(138,154,181,0.4)" }}>Trade moves on BLOC.</span>
+      <div style={{ borderTop:`1px solid ${T.footerBorder}`, padding:"20px 40px", display:"flex", justifyContent:"space-between" }}>
+        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.footerMuted }}>© 2025 BLOC Platform Ltd. All rights reserved.</span>
+        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.footerMuted }}>Trade moves on BLOC.</span>
       </div>
     </footer>
   );
@@ -652,6 +784,8 @@ function Footer() {
 
 // ── MODAL ─────────────────────────────────────────────────────
 function SignInModal({ open, onClose, defaultRole }) {
+  const { dark } = useTheme();
+  const T = dark ? DARK : LIGHT;
   const [role, setRole] = useState(defaultRole || null);
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
@@ -665,36 +799,36 @@ function SignInModal({ open, onClose, defaultRole }) {
   const roles = ["Importer","Clearing Agent","Financier","Transport"];
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, zIndex:200, background:"rgba(10,10,10,0.85)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background:C.steel, width:"100%", maxWidth:440, borderRadius:4, overflow:"hidden", position:"relative" }}>
-        <div style={{ background:C.void, padding:"32px 36px 24px", borderBottom:`1px solid ${C.concrete}` }}>
-          <button onClick={onClose} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", color:C.mist, cursor:"pointer", fontSize:18 }}>✕</button>
+      <div onClick={e => e.stopPropagation()} style={{ background:T.card, width:"100%", maxWidth:440, borderRadius:4, overflow:"hidden", position:"relative", transition:"background 0.3s" }}>
+        <div style={{ background: dark ? C_BRAND.void : T.cardAlt, padding:"32px 36px 24px", borderBottom:`1px solid ${T.cardBorder}` }}>
+          <button onClick={onClose} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", color:T.bodyColor, cursor:"pointer", fontSize:18 }}>✕</button>
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
             <BlocMark size={20} />
-            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"0.15em", color:C.cream }}>BLOC</span>
+            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"0.15em", color: dark ? C_BRAND.cream : C_BRAND.void }}> BLOC</span>
           </div>
-          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, letterSpacing:"0.06em", color:C.cream }}>Sign In</div>
-          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:C.mist, marginTop:4 }}>{role ? `${role} Portal` : "Select your role to continue"}</div>
+          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, letterSpacing:"0.06em", color: dark ? C_BRAND.cream : C_BRAND.void }}>Sign In</div>
+          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.bodyColor, marginTop:4 }}>{role ? `${role} Portal` : "Select your role to continue"}</div>
         </div>
         <div style={{ padding:"28px 36px" }}>
-          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:C.mist, marginBottom:10 }}>I am a —</div>
+          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.bodyColor, marginBottom:10 }}>I am a —</div>
           <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:24 }}>
             {roles.map(r => (
-              <button key={r} onClick={() => setRole(r)} style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.08em", textTransform:"uppercase", padding:"7px 14px", borderRadius:2, border:`1px solid ${role === r ? C.rust : C.concrete}`, background: role === r ? C.rust : "transparent", color: role === r ? C.cream : C.mist, cursor:"pointer", transition:"all 0.15s" }}>{r}</button>
+              <button key={r} onClick={() => setRole(r)} style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.08em", textTransform:"uppercase", padding:"7px 14px", borderRadius:2, border:`1px solid ${role === r ? C_BRAND.rust : T.cardBorder}`, background: role === r ? C_BRAND.rust : "transparent", color: role === r ? C_BRAND.cream : T.bodyColor, cursor:"pointer", transition:"all 0.15s" }}>{r}</button>
             ))}
           </div>
           <div style={{ marginBottom:14 }}>
-            <label style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:C.mist, display:"block", marginBottom:6 }}>Email / Phone</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@company.com or +254..." style={{ width:"100%", padding:"11px 14px", background:C.concrete, border:`1px solid ${C.concrete}`, borderRadius:2, color:C.cream, fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
+            <label style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.bodyColor, display:"block", marginBottom:6 }}>Email / Phone</label>
+            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@company.com or +254..." style={{ width:"100%", padding:"11px 14px", background:T.inputBg, border:`1px solid ${T.inputBorder}`, borderRadius:2, color: dark ? C_BRAND.cream : C_BRAND.void, fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
           </div>
           <div style={{ marginBottom:24 }}>
-            <label style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:C.mist, display:"block", marginBottom:6 }}>Password</label>
-            <input value={pass} onChange={e => setPass(e.target.value)} type="password" placeholder="••••••••••" style={{ width:"100%", padding:"11px 14px", background:C.concrete, border:`1px solid ${C.concrete}`, borderRadius:2, color:C.cream, fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
+            <label style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.bodyColor, display:"block", marginBottom:6 }}>Password</label>
+            <input value={pass} onChange={e => setPass(e.target.value)} type="password" placeholder="••••••••••" style={{ width:"100%", padding:"11px 14px", background:T.inputBg, border:`1px solid ${T.inputBorder}`, borderRadius:2, color: dark ? C_BRAND.cream : C_BRAND.void, fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
           </div>
-          <button style={{ width:"100%", padding:"14px 0", background:C.rust, color:C.cream, fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.12em", textTransform:"uppercase", border:"none", borderRadius:2, cursor:"pointer" }}>
+          <button style={{ width:"100%", padding:"14px 0", background:C_BRAND.rust, color:C_BRAND.cream, fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.12em", textTransform:"uppercase", border:"none", borderRadius:2, cursor:"pointer" }}>
             ACCESS {role ? role.toUpperCase() : ""} DASHBOARD →
           </button>
-          <div style={{ textAlign:"center", marginTop:16, fontFamily:"'Space Mono',monospace", fontSize:9, color:C.mist }}>
-            <a href="#" style={{ color:C.mist }}>Forgot password?</a> · New operator? <a href="#" style={{ color:C.rust }}>Request access</a>
+          <div style={{ textAlign:"center", marginTop:16, fontFamily:"'Space Mono',monospace", fontSize:9, color:T.bodyColor }}>
+            <a href="#" style={{ color:T.bodyColor }}>Forgot password?</a> · New operator? <a href="#" style={{ color:C_BRAND.rust }}>Request access</a>
           </div>
         </div>
       </div>
@@ -713,14 +847,28 @@ function WAFloat() {
 
 // ── APP ───────────────────────────────────────────────────────
 export default function App() {
+  const [dark, setDark] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalRole, setModalRole] = useState(null);
 
+  // Persist preference across sessions
+  useEffect(() => {
+    const saved = localStorage.getItem("bloc-theme");
+    if (saved) setDark(saved === "dark");
+  }, []);
+
+  const toggle = () => setDark(prev => {
+    const next = !prev;
+    localStorage.setItem("bloc-theme", next ? "dark" : "light");
+    return next;
+  });
+
+  const T = dark ? DARK : LIGHT;
   const openSignIn = (role) => { setModalRole(role || null); setModalOpen(true); };
 
   return (
-    <>
-      <GlobalStyles />
+    <ThemeCtx.Provider value={{ dark, toggle }}>
+      <GlobalStyles T={T} />
       <Nav onSignIn={() => openSignIn()} />
       <main style={{ paddingTop:60 }}>
         <Hero onSignIn={() => openSignIn()} />
@@ -739,6 +887,6 @@ export default function App() {
       <Footer />
       <WAFloat />
       <SignInModal open={modalOpen} onClose={() => setModalOpen(false)} defaultRole={modalRole} />
-    </>
+    </ThemeCtx.Provider>
   );
 }
