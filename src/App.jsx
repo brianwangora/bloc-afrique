@@ -425,8 +425,9 @@ function BeforeAfter() {
 const HOW_STEPS = [
   { num:"01", title:"Source",          desc:"Verify suppliers, lock prices, apply for trade credit. BLOC connects you to vetted Guangzhou sourcing agents and Alibaba verified sellers before any money moves.", tag:"Pre-shipment" },
   { num:"02", title:"Pay Securely",    desc:"Pay via M-PESA into BLOC escrow. Your KES is converted and held until your Bill of Lading is confirmed — you see the full payment trail. Nothing leaves escrow without a cargo milestone.", tag:"Money-out rail" },
-  { num:"03", title:"Clear",           desc:"Your clearing agent receives the job on BLOC. KenTrade pre-filing, duty calculation, KRA customs declaration — all managed in-platform. Target: 4 hours to release.", tag:"Mombasa port" },
-  { num:"04", title:"Track & Receive", desc:"Goods move from Mombasa gate to your warehouse — tracked live on BLOC. Escrow releases to your supplier and transporter only on confirmed delivery to you.", tag:"Last mile" },
+  { num:"03", title:"Insure",          desc:"Before your cargo leaves port, You can purchase marine insurance in-platform covering loss, damage, and delay across the full corridor. Underwritten by licensed Kenyan insurers already on Bloc.", tag:"Marine cover" },
+  { num:"04", title:"Clear",           desc:"Your clearing agent receives the job on BLOC. KenTrade pre-filing, duty calculation, KRA customs declaration — all managed in-platform. Target: 4 hours to release.", tag:"Mombasa port" },
+  { num:"05", title:"Track & Receive", desc:"Goods move from Mombasa gate to your warehouse — tracked live on BLOC. Escrow releases to your supplier and transporter only on confirmed delivery to you.", tag:"Last mile" },
 ];
 
 function HowItWorks() {
@@ -434,12 +435,12 @@ function HowItWorks() {
   const T = dark ? DARK : LIGHT;
   const bp = useBreakpoint();
   const [ref, visible] = useInView();
-  const cols = bp.isMobile ? "1fr 1fr" : "repeat(4,1fr)";
+  const cols = bp.isMobile ? "1fr 1fr" : "repeat(5,1fr)";
   return (
     <section id="how-works" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>How It Works</SectionLabel>
-      <SectionH2>Source. Pay. Clear.<br />Delivered.</SectionH2>
-      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom: bp.isMobile ? 36 : 56 }}>
+      <SectionH2>Source. Pay. Insure. Clear.<br />Deliver.</SectionH2>
+      <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom: bp.isMobile ? 36 : 56, margin: `0 auto ${bp.isMobile ? "36px" : "56px"}`, textAlign:"center" }}>
         Your money and your goods travel in parallel. BLOC shows you exactly where both are — at every step.
       </p>
       <div style={{ display:"grid", gridTemplateColumns:cols, gap: bp.isMobile ? "32px 16px" : 0, position:"relative" }}>
