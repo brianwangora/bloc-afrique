@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { useState, useEffect, useRef, createContext, useContext, Component } from "react";
 
 // ── THEME CONTEXT ─────────────────────────────────────────────
 const ThemeCtx = createContext({ dark: true, toggle: () => {} });
@@ -27,8 +27,8 @@ const DARK = {
   inputBg:"#2C3347", inputBorder:"#2C3347",
   tickerBg:"#1A1F2E", proofBg:"#1A1F2E", proofBorder:"#2C3347",
   beforeBg:"#1A1F2E", afterBg:"#0F1A10", afterText:"#9CCBA0",
-  corridorBg:"#1A1F2E", testimonialBg:"#2C3347",
-  aboutBg:"#F8F6F2", aboutHeading:"#0A0A0A", aboutBody:"#4A5A6E", aboutCard:"#ffffff", aboutBorder:"#E0DAD0",
+  corridorBg:"#1A1F2E",
+  aboutBg:"#12172A", aboutHeading:"#F5F0E8", aboutBody:"#8A9AB5", aboutCard:"#1A1F2E", aboutBorder:"#2C3347",
   portalBg:"#F8F6F2", portalCard:"#ffffff", portalBorder:"#E0DAD0", portalHead:"#0A0A0A", portalBody:"#5A6A7E", portalMuted:"#6A7A90",
   footerBg:"#0A0A0A", footerBorder:"#2C3347", footerText:"rgba(138,154,181,0.7)", footerMuted:"rgba(138,154,181,0.4)",
   gridLine:"rgba(201,79,30,0.04)", pricePlanBg:"#1A1F2E",
@@ -40,8 +40,8 @@ const LIGHT = {
   inputBg:"#F0EDE6", inputBorder:"#D0CAC0",
   tickerBg:"#EDEAE3", proofBg:"#EDEAE3", proofBorder:"#D8D4CC",
   beforeBg:"#F0EDE6", afterBg:"#EAF4EB", afterText:"#2E6B35",
-  corridorBg:"#ffffff", testimonialBg:"#F0EDE6",
-  aboutBg:"#F0EDE6", aboutHeading:"#0A0A0A", aboutBody:"#4A5A6E", aboutCard:"#ffffff", aboutBorder:"#E0DAD0",
+  corridorBg:"#ffffff",
+  aboutBg:"#E8E4DC", aboutHeading:"#0A0A0A", aboutBody:"#4A5A6E", aboutCard:"#ffffff", aboutBorder:"#D0CAC0",
   portalBg:"#ffffff", portalCard:"#F8F6F2", portalBorder:"#E0DAD0", portalHead:"#0A0A0A", portalBody:"#4A5A6E", portalMuted:"#6A7A90",
   footerBg:"#EDEAE3", footerBorder:"#D8D4CC", footerText:"#6A7A90", footerMuted:"#9AA5B4",
   gridLine:"rgba(201,79,30,0.06)", pricePlanBg:"#F0EDE6",
@@ -178,15 +178,20 @@ function useInView(threshold = 0.08) {
 const px = (bp) => bp.isMobile ? "64px 20px" : bp.isTablet ? "80px 28px" : "96px 40px";
 
 // ── NAV ──────────────────────────────────────────────────────
+// Smooth scroll helper — works on iOS Safari unlike CSS scroll-behavior
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function Nav({ onSignIn }) {
   const { dark } = useTheme();
   const T = dark ? DARK : LIGHT;
   const bp = useBreakpoint();
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = [["How it Works", "#how-works"],["Platform","#platform"],["Corridors","#corridors"],["About","#about"],["Pricing","#pricing"]];
+  const links = [["How it Works","how-works"],["Platform","platform"],["Corridors","corridors"],["About","about"],["Pricing","pricing"]];
 
-  // Close menu on link click
-  const handleLink = () => setMenuOpen(false);
+  const handleLink = (id) => { scrollTo(id); setMenuOpen(false); };
 
   return (
     <>
@@ -200,10 +205,10 @@ function Nav({ onSignIn }) {
         {!bp.isMobile && (
           <div style={{ display:"flex", alignItems:"center", gap: bp.isTablet ? 16 : 24 }}>
             {!bp.isTablet && (
-              <ul style={{ display:"flex", alignItems:"center", gap:28, listStyle:"none" }}>
-                {links.map(([label, href]) => (
+              <ul style={{ display:"flex", alignItems:"center", gap:20, listStyle:"none" }}>
+                {links.map(([label, id]) => (
                   <li key={label}>
-                    <a href={href} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", color: dark ? C.mist : "#6A7A90", textDecoration:"none", textTransform:"uppercase" }}>{label}</a>
+                    <button onClick={() => handleLink(id)} style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.08em", color: dark ? C.mist : "#6A7A90", background:"none", border:"none", cursor:"pointer", textTransform:"uppercase", padding:"4px 0" }}>{label}</button>
                   </li>
                 ))}
               </ul>
@@ -238,9 +243,9 @@ function Nav({ onSignIn }) {
       {menuOpen && (
         <div className="mobile-menu-open" style={{ position:"fixed", top:60, left:0, right:0, zIndex:99, background:T.navBg, backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.navBorder}`, padding:"16px 20px 24px" }}>
           <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:0 }}>
-            {links.map(([label, href]) => (
+            {links.map(([label, id]) => (
               <li key={label}>
-                <a href={href} onClick={handleLink} style={{ fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", color: dark ? C.mist : "#6A7A90", textDecoration:"none", display:"block", padding:"14px 0", borderBottom:`1px solid ${T.navBorder}` }}>{label}</a>
+                <button onClick={() => handleLink(id)} style={{ fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", color: dark ? C.mist : "#6A7A90", background:"none", border:"none", borderBottom:`1px solid ${T.navBorder}`, cursor:"pointer", display:"block", width:"100%", textAlign:"left", padding:"14px 0" }}>{label}</button>
               </li>
             ))}
           </ul>
@@ -276,7 +281,7 @@ function Hero({ onSignIn }) {
         </p>
         <div style={{ display:"flex", flexDirection: bp.isMobile ? "column" : "row", alignItems: bp.isMobile ? "stretch" : "center", gap:12, flexWrap:"wrap" }}>
           <BtnPrimary onClick={onSignIn} fullWidth={bp.isMobile}>Access Platform →</BtnPrimary>
-          <BtnGhost href="#how-works" fullWidth={bp.isMobile}>See How It Works</BtnGhost>
+          <BtnGhost onClick={() => scrollTo("how-works")} fullWidth={bp.isMobile}>See How It Works</BtnGhost>
         </div>
         <div style={{ marginTop:20, display:"flex", alignItems:"center", gap:8, fontFamily:"'Space Mono',monospace", fontSize: bp.isMobile ? 9 : 10, color: dark ? C.mist : "#6A7A90", letterSpacing:"0.08em" }}>
           <div style={{ width:18, height:18, background:"#25D366", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -350,7 +355,8 @@ function Ticker() {
 function ProofStrip() {
   const { dark } = useTheme();
   const T = dark ? DARK : LIGHT;
-  const logos = ["Siginon Freight","Maritime Centre","Bollore Logistics","Kenya Freight Services","Transami Kenya","Afrifreight Ltd","Inchcape Shipping","Pan-African Clearing"];
+  // TODO: Replace with confirmed partner logos before investor presentations
+  const logos = ["C&F Partner 01","C&F Partner 02","C&F Partner 03","C&F Partner 04","C&F Partner 05","C&F Partner 06","C&F Partner 07","C&F Partner 08"];
   return (
     <div style={{ background:T.proofBg, borderBottom:`1px solid ${T.proofBorder}`, padding:"28px 20px", transition:"background 0.3s" }}>
       <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.15em", textTransform:"uppercase", color: dark ? C.mist : "#6A7A90", textAlign:"center", marginBottom:20 }}>
@@ -437,7 +443,7 @@ function HowItWorks() {
   const [ref, visible] = useInView();
   const cols = bp.isMobile ? "1fr 1fr" : "repeat(5,1fr)";
   return (
-    <section id="how-works" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
+    <section id="how-works" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), scrollMarginTop:60, opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>How It Works</SectionLabel>
       <SectionH2>Source. Pay. Insure. Clear.<br />Deliver.</SectionH2>
       <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom: bp.isMobile ? 36 : 56, margin: `0 auto ${bp.isMobile ? "36px" : "56px"}`, textAlign:"center" }}>
@@ -477,7 +483,7 @@ function Products() {
   const [openIdx, setOpenIdx] = useState(0);
   const [ref, visible] = useInView();
   return (
-    <section id="platform" ref={ref} style={{ background:T.sectionDeep, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
+    <section id="platform" ref={ref} style={{ background:T.sectionDeep, padding:px(bp), scrollMarginTop:60, opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
       <div style={{ display:"grid", gridTemplateColumns: bp.isMobile ? "1fr" : "1fr 1fr", gap: bp.isMobile ? 16 : 60, alignItems:"end", marginBottom: bp.isMobile ? 32 : 64 }}>
         <div>
           <SectionLabel>Platform</SectionLabel>
@@ -549,7 +555,7 @@ function About() {
   const bp = useBreakpoint();
   const [ref, visible] = useInView();
   return (
-    <section id="about" ref={ref} style={{ background:T.aboutBg, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
+    <section id="about" ref={ref} style={{ background:T.aboutBg, padding:px(bp), scrollMarginTop:60, opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>About BLOC</SectionLabel>
       <SectionH2 color={T.aboutHeading}>Built in Nairobi.<br />Built for Trade.</SectionH2>
       <div style={{ display:"grid", gridTemplateColumns: bp.isMobile ? "1fr" : bp.isTablet ? "1fr" : "1fr 1fr", gap: bp.isMobile ? 32 : 80, marginTop:40, alignItems:"start" }}>
@@ -604,7 +610,7 @@ function Corridors() {
   const [ref, visible] = useInView();
   const cols = bp.isMobile ? "1fr 1fr" : bp.isTablet ? "1fr 1fr 1fr" : "repeat(3,1fr)";
   return (
-    <section id="corridors" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
+    <section id="corridors" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), scrollMarginTop:60, opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Active Corridors</SectionLabel>
       <SectionH2>Every Corridor.<br />One Platform.</SectionH2>
       <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom: bp.isMobile ? 32 : 56 }}>Six corridors on the roadmap. Each with dedicated compliance rules, FX pairs, and logistics networks built in.</p>
@@ -707,21 +713,21 @@ const SLIDER_CSS = `
   }
 `;
 
+// headline is an array of line-segments. Each line is a string or { em: true, text: string }
 const SLIDES = [
   {
     bg: "https://d8j0ntlcm91z4.cloudfront.net/user_3EoK8Lekdk7fY8tTRff9rKP8Qo7/hf_20260607_135358_6591b93f-ca23-4c23-af59-2be3c9644ae8.png",
     bgPos: "center 28%",
     num: "01 / 04",
     persona: "Brian Mwangi · SME Importer · Kamukunji, Nairobi",
-    headline: ["Toka Block", "na ", "BLOC."],
-    headlineEm: 1,
+    headline: [["Toka Block"], ["na ", { em:"BLOC." }]],
     body: "Every morning, traders like Brian move goods across four borders. With BLOC, the compliance is handled, the payment is cleared, and the cargo moves — before the competition has filed their first form.",
     tags: ["Compliance","Payments","Trade Finance"],
     bubbleLabel: "BLOC Platform · Live",
     bubbleRows: [
-      { k:"Status",   v:"Cargo Cleared ✓", cls:"green" },
-      { k:"IDF Ref",  v:"KE-2024-084521" },
-      { k:"Route",    v:"Mombasa → Nairobi" },
+      { k:"Status",     v:"Cargo Cleared ✓", cls:"green" },
+      { k:"IDF Ref",    v:"KE-2024-084521" },
+      { k:"Route",      v:"Mombasa → Nairobi" },
       { k:"Cleared at", v:"14:32 EAT", cls:"gold" },
     ],
   },
@@ -730,16 +736,15 @@ const SLIDES = [
     bgPos: "center top",
     num: "02 / 04",
     persona: "Njeri Kamau · Head of Supply Chain · Upper Hill, Nairobi",
-    headline: ["The Building", "Bloc", " for", "Your Business."],
-    headlineEm: 1,
+    headline: [["The Building"], [{ em:"Bloc" }, " for"], ["Your Business."]],
     body: "Njeri manages trade across three continents. BLOC gives her a single platform where every corridor, every shipment, every compliance status is visible — and actionable — in real time.",
     tags: ["Trade Intelligence","Risk Management","Analytics"],
     bubbleLabel: "BLOC Dashboard · Live",
     bubbleRows: [
-      { k:"Active Corridors", v:"3", cls:"gold" },
-      { k:"In Transit",       v:"12 Shipments" },
-      { k:"Compliance Alerts",v:"0 ✓", cls:"green" },
-      { k:"On-Time Rate",     v:"96.4%", cls:"green" },
+      { k:"Active Corridors",  v:"3", cls:"gold" },
+      { k:"In Transit",        v:"12 Shipments" },
+      { k:"Compliance Alerts", v:"0 ✓", cls:"green" },
+      { k:"On-Time Rate",      v:"96.4%", cls:"green" },
     ],
   },
   {
@@ -747,8 +752,7 @@ const SLIDES = [
     bgPos: "center 28%",
     num: "03 / 04",
     persona: "Amos Ochieng · Licensed Clearing Agent · Mombasa ICD",
-    headline: ["Built", "on ", "BLOC."],
-    headlineEm: 1,
+    headline: [["Built"], ["on ", { em:"BLOC." }]],
     body: "Amos has cleared thousands of shipments. BLOC gives him the infrastructure to work faster — complete documentation, full audit trails, and no surprises at the gate. Every declaration. Defensible.",
     tags: ["Customs Compliance","Documentation","Audit Trail"],
     bubbleLabel: "BLOC Compliance · Live",
@@ -764,8 +768,7 @@ const SLIDES = [
     bgPos: "center 28%",
     num: "04 / 04",
     persona: "John Kariuki · Transport Operator · Mombasa–Nairobi Corridor",
-    headline: ["Your goods move.", "On time.", "On ", "BLOC."],
-    headlineEm: 2,
+    headline: [["Your goods move."], ["On time."], ["On ", { em:"BLOC." }]],
     body: "The gate opens. The route is confirmed. The delivery window holds. For operators like John, BLOC is the infrastructure that makes predictable movement — across every border — possible.",
     tags: ["Logistics Coordination","Real-time Tracking","Route Intelligence"],
     bubbleLabel: "BLOC Logistics · Live",
@@ -779,19 +782,20 @@ const SLIDES = [
 ];
 
 const GOLD = "#C8943A";
-const vClr = { green:"#22C55E", gold:GOLD, default:"#fff" };
+const vClr = { green:"#22C55E", gold:GOLD };
 
-function SlideHeadline({ lines, emIdx }) {
-  // emIdx = which line index gets the italic gold <em> treatment
+// Renders a headline where each line is an array of plain strings and { em } objects
+function SlideHeadline({ headline }) {
   return (
-    <h2 style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize:"clamp(2.2rem,4.6vw,3.9rem)", fontWeight:900, lineHeight:1.04, letterSpacing:"-0.015em", color:"#fff" }}>
-      {lines.map((line, i) => (
-        <span key={i}>
-          {i === emIdx
-            ? <><span style={{ color:"#fff" }}>{line.replace(/BLOC\.$|BLOC\./, "")}</span><em style={{ color:GOLD, fontStyle:"italic" }}>BLOC.</em></>
-            : line
-          }
-          {i < lines.length - 1 && <br />}
+    <h2 style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize:"clamp(2.2rem,4.6vw,3.9rem)", fontWeight:900, lineHeight:1.1, letterSpacing:"-0.015em", color:"#fff" }}>
+      {headline.map((segments, li) => (
+        <span key={li}>
+          {segments.map((seg, si) =>
+            typeof seg === "string"
+              ? <span key={si}>{seg}</span>
+              : <em key={si} style={{ color:GOLD, fontStyle:"italic" }}>{seg.em}</em>
+          )}
+          {li < headline.length - 1 && <br />}
         </span>
       ))}
     </h2>
@@ -884,7 +888,7 @@ function StoriesSlider() {
                 <span style={{ fontSize:"0.66rem", letterSpacing:"0.13em", textTransform:"uppercase", color:"rgba(255,255,255,0.55)", fontFamily:"'Space Mono',monospace" }}>{s.persona}</span>
               </div>
               <div className="bloc-anim bloc-d2">
-                <SlideHeadline lines={s.headline} emIdx={s.headlineEm} />
+                <SlideHeadline headline={s.headline} />
               </div>
               <p className="bloc-anim bloc-d3" style={{ fontSize:"clamp(0.88rem,1.15vw,1.02rem)", lineHeight:1.8, color:"rgba(255,255,255,0.72)", maxWidth:460 }}>{s.body}</p>
               <div className="bloc-anim bloc-d4" style={{ display:"flex", gap:"0.45rem", flexWrap:"wrap" }}>
@@ -984,7 +988,7 @@ function Pricing({ onSignIn }) {
   const [ref, visible] = useInView();
   const cols = bp.isMobile ? "1fr" : "repeat(3,1fr)";
   return (
-    <section id="pricing" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
+    <section id="pricing" ref={ref} style={{ background:T.sectionAlt, padding:px(bp), scrollMarginTop:60, opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
       <SectionLabel>Pricing</SectionLabel>
       <SectionH2>Start Free.<br />Pay as You Move.</SectionH2>
       <p style={{ fontSize:14, color:T.bodyColor, lineHeight:1.7, maxWidth:480, fontWeight:300, marginBottom: bp.isMobile ? 32 : 56 }}>Every operator type has a plan. No surprise fees — every cost is visible before you commit.</p>
@@ -1028,7 +1032,8 @@ function LoginCTA({ onSignIn }) {
       </p>
       <div style={{ display:"flex", flexDirection: bp.isMobile ? "column" : "row", gap:12, justifyContent:"center", alignItems: bp.isMobile ? "stretch" : "center" }}>
         <BtnPrimary onClick={onSignIn} fullWidth={bp.isMobile}>Sign In to BLOC</BtnPrimary>
-        <BtnGhost href="https://wa.me/254700000000" fullWidth={bp.isMobile}>Chat on WhatsApp</BtnGhost>
+        {/* TODO: Replace 254700000000 with the real BLOC WhatsApp business number */}
+        <BtnGhost href="#" fullWidth={bp.isMobile}>Chat on WhatsApp</BtnGhost>
       </div>
     </section>
   );
@@ -1070,7 +1075,7 @@ function Footer() {
         ))}
       </div>
       <div style={{ borderTop:`1px solid ${T.footerBorder}`, padding: bp.isMobile ? "16px 20px" : "20px 40px", display:"flex", flexDirection: bp.isMobile ? "column" : "row", justifyContent:"space-between", gap:8 }}>
-        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.footerMuted }}>© 2025 BLOC Platform Ltd. All rights reserved.</span>
+        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.footerMuted }}>© {new Date().getFullYear()} BLOC Platform Ltd. All rights reserved.</span>
         <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.footerMuted }}>Trade moves on BLOC.</span>
       </div>
     </footer>
@@ -1085,7 +1090,9 @@ function SignInModal({ open, onClose, defaultRole }) {
   const [role, setRole] = useState(defaultRole || null);
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | loading | success | error
   useEffect(() => { if (defaultRole) setRole(defaultRole); }, [defaultRole]);
+  useEffect(() => { if (!open) { setStatus("idle"); setEmail(""); setPass(""); } }, [open]);
   useEffect(() => {
     const handler = (e) => { if (e.key==="Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -1093,6 +1100,13 @@ function SignInModal({ open, onClose, defaultRole }) {
   }, [onClose]);
   if (!open) return null;
   const roles = ["Importer","Clearing Agent","Financier","Transport"];
+
+  const handleSubmit = () => {
+    if (!role) { setStatus("error"); return; }
+    setStatus("loading");
+    // Placeholder — replace with real auth call when backend is ready
+    setTimeout(() => setStatus("success"), 1200);
+  };
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, zIndex:200, background:"rgba(10,10,10,0.85)", backdropFilter:"blur(8px)", display:"flex", alignItems: bp.isMobile ? "flex-end" : "center", justifyContent:"center", padding: bp.isMobile ? 0 : 24 }}>
       <div onClick={e => e.stopPropagation()} style={{ background:T.card, width:"100%", maxWidth: bp.isMobile ? "100%" : 440, borderRadius: bp.isMobile ? "12px 12px 0 0" : 4, overflow:"hidden", position:"relative", transition:"background 0.3s", maxHeight: bp.isMobile ? "92svh" : undefined, overflowY:"auto" }}>
@@ -1120,12 +1134,28 @@ function SignInModal({ open, onClose, defaultRole }) {
             <label style={{ fontFamily:"'Space Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color:T.bodyColor, display:"block", marginBottom:6 }}>Password</label>
             <input value={pass} onChange={e => setPass(e.target.value)} type="password" placeholder="••••••••••" style={{ width:"100%", padding:"13px 14px", background:T.inputBg, border:`1px solid ${T.inputBorder}`, borderRadius:2, color: dark ? C.cream : C.void, fontFamily:"'DM Sans',sans-serif", fontSize:16, outline:"none" }} />
           </div>
-          <button style={{ width:"100%", padding:"16px 0", background:C.rust, color:C.cream, fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.12em", textTransform:"uppercase", border:"none", borderRadius:2, cursor:"pointer", minHeight:52 }}>
-            ACCESS {role ? role.toUpperCase() : ""} DASHBOARD →
-          </button>
-          <div style={{ textAlign:"center", marginTop:16, fontFamily:"'Space Mono',monospace", fontSize:9, color:T.bodyColor }}>
-            <a href="#" style={{ color:T.bodyColor }}>Forgot password?</a> · New operator? <a href="#" style={{ color:C.rust }}>Request access</a>
-          </div>
+          {status === "error" && (
+            <div style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:2, padding:"10px 14px", marginBottom:14, fontFamily:"'Space Mono',monospace", fontSize:9, color:"#EF4444", letterSpacing:"0.08em" }}>
+              Please select your role before continuing.
+            </div>
+          )}
+          {status === "success" ? (
+            <div style={{ background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:2, padding:"20px 14px", textAlign:"center" }}>
+              <div style={{ fontSize:28, marginBottom:8 }}>✓</div>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:C.green, letterSpacing:"0.1em", textTransform:"uppercase" }}>Platform access coming soon</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.bodyColor, marginTop:8, lineHeight:1.5 }}>We're onboarding operators in batches. We'll be in touch at the email provided.</div>
+              <button onClick={onClose} style={{ marginTop:16, fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", background:"transparent", border:`1px solid ${T.cardBorder}`, borderRadius:2, color:T.bodyColor, padding:"8px 20px", cursor:"pointer" }}>Close</button>
+            </div>
+          ) : (
+            <button onClick={handleSubmit} disabled={status === "loading"} style={{ width:"100%", padding:"16px 0", background: status === "loading" ? "#a33c17" : C.rust, color:C.cream, fontFamily:"'Space Mono',monospace", fontSize:11, letterSpacing:"0.12em", textTransform:"uppercase", border:"none", borderRadius:2, cursor: status === "loading" ? "not-allowed" : "pointer", minHeight:52, transition:"background 0.2s" }}>
+              {status === "loading" ? "Authenticating..." : `Access ${role ? role.toUpperCase() : ""} Dashboard →`}
+            </button>
+          )}
+          {status !== "success" && (
+            <div style={{ textAlign:"center", marginTop:16, fontFamily:"'Space Mono',monospace", fontSize:9, color:T.bodyColor }}>
+              <a href="#" style={{ color:T.bodyColor }}>Forgot password?</a> · New operator? <a href="#" style={{ color:C.rust }}>Request access</a>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1137,11 +1167,30 @@ function WAFloat() {
   const bp = useBreakpoint();
   // Sit above the bottom safe area on mobile
   return (
-    <a href="https://wa.me/254700000000" target="_blank" rel="noreferrer"
+    // TODO: Replace 254700000000 with the real BLOC WhatsApp business number
+    <a href="#" target="_blank" rel="noreferrer"
       style={{ position:"fixed", bottom: bp.isMobile ? 20 : 28, right: bp.isMobile ? 16 : 28, zIndex:150, width:52, height:52, background:"#25D366", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 16px rgba(37,211,102,0.4)", textDecoration:"none" }}>
       <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.128.558 4.122 1.531 5.85L0 24l6.341-1.507A11.951 11.951 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
     </a>
   );
+}
+
+// ── ERROR BOUNDARY ────────────────────────────────────────────
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#0A0A0A", color:"#F5F0E8", fontFamily:"'Space Mono',monospace", textAlign:"center", padding:24 }}>
+          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:48, color:"#C94F1E", letterSpacing:"0.1em", marginBottom:16 }}>BLOC</div>
+          <div style={{ fontSize:11, letterSpacing:"0.15em", textTransform:"uppercase", color:"#8A9AB5", marginBottom:24 }}>Something went wrong loading the platform.</div>
+          <button onClick={() => window.location.reload()} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", background:"#C94F1E", color:"#F5F0E8", padding:"12px 24px", border:"none", borderRadius:2, cursor:"pointer" }}>Reload Page</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ── APP ───────────────────────────────────────────────────────
@@ -1165,6 +1214,7 @@ export default function App() {
   const openSignIn = (role) => { setModalRole(role || null); setModalOpen(true); };
 
   return (
+    <ErrorBoundary>
     <ThemeCtx.Provider value={{ dark, toggle }}>
       <GlobalStyles T={T} />
       <Nav onSignIn={() => openSignIn()} />
@@ -1186,5 +1236,6 @@ export default function App() {
       <WAFloat />
       <SignInModal open={modalOpen} onClose={() => setModalOpen(false)} defaultRole={modalRole} />
     </ThemeCtx.Provider>
+    </ErrorBoundary>
   );
 }
