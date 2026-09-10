@@ -673,38 +673,299 @@ function Portals({ onSignIn }) {
   );
 }
 
-// ── TESTIMONIALS ──────────────────────────────────────────────
-const TESTIMONIALS = [
-  { body:"\"I've been importing electronics from Guangzhou for six years. The duty calculation alone used to take three days. On BLOC I had the exact figure within two minutes of uploading my proforma. I negotiated a better deal because I knew my real landed cost.\"", name:"James Mwangi", role:"Electronics Importer, Nairobi", pill:"Importer", initials:"JM" },
-  { body:"\"We process over 60 clearances a month through Mombasa. Before BLOC, we were managing everything on WhatsApp threads. The job queue alone is worth it — I can see exactly where every container is, and when KRA has released it.\"", name:"Amina Odhiambo", role:"Clearing Agent, Mombasa", pill:"Clearing Agent", initials:"AO" },
-  { body:"\"BLOC gives us live cargo data tied directly to the loan facility. When the Bill of Lading is confirmed, we know it's real. Our default rate on BLOC-originated facilities is 40% lower than our off-platform book.\"", name:"Ruth Kamau", role:"Trade Finance, Kenya Commercial Bank", pill:"Financier", initials:"RK" },
+// ── STORIES SLIDER ────────────────────────────────────────────
+const SLIDER_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap');
+  .bloc-slide { position:absolute; inset:0; opacity:0; transition:opacity 1.4s cubic-bezier(0.4,0,0.2,1); pointer-events:none; }
+  .bloc-slide.active { opacity:1; z-index:2; pointer-events:auto; }
+  .bloc-slide-bg { position:absolute; inset:-5%; background-size:cover; background-position:center 28%; transform:scale(1.0); transition:transform 11s ease-out; }
+  .bloc-slide.active .bloc-slide-bg { transform:scale(1.055) translate(0.6%,0.4%); }
+  .bloc-slide-overlay {
+    position:absolute; inset:0;
+    background: linear-gradient(108deg, rgba(7,9,12,0.94) 0%, rgba(7,9,12,0.62) 48%, rgba(7,9,12,0.10) 100%),
+                linear-gradient(to top, rgba(7,9,12,0.98) 0%, rgba(7,9,12,0.25) 32%, transparent 58%);
+  }
+  .bloc-anim   { opacity:0; transform:translateY(20px); transition:opacity 0.72s ease, transform 0.72s ease; }
+  .bloc-anim-r { opacity:0; transform:translateX(22px); transition:opacity 0.72s ease, transform 0.72s ease; }
+  .bloc-slide.active .bloc-d1 { opacity:1; transform:none; transition-delay:0.30s; }
+  .bloc-slide.active .bloc-d2 { opacity:1; transform:none; transition-delay:0.50s; }
+  .bloc-slide.active .bloc-d3 { opacity:1; transform:none; transition-delay:0.66s; }
+  .bloc-slide.active .bloc-d4 { opacity:1; transform:none; transition-delay:0.80s; }
+  .bloc-slide.active .bloc-d5 { opacity:1; transform:none; transition-delay:0.95s; }
+  .bloc-slide.active .bloc-d6 { opacity:1; transform:none; transition-delay:1.10s; }
+  .bloc-dot { width:6px; height:6px; border-radius:3px; background:rgba(255,255,255,0.22); cursor:pointer; border:none; transition:all 0.35s ease; padding:0; }
+  .bloc-dot.active { background:#C8943A; width:22px; }
+  .bloc-arrow { width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.11); background:rgba(7,9,12,0.48); backdrop-filter:blur(10px); color:rgba(255,255,255,0.6); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.28s ease; }
+  .bloc-arrow:hover { border-color:#C8943A; color:#C8943A; background:rgba(200,148,58,0.18); }
+  @keyframes bloc-blink { 0%,100%{opacity:1} 50%{opacity:0.28} }
+  .bloc-status-dot { animation: bloc-blink 2.6s ease-in-out infinite; }
+  .bloc-closing-cta:hover { background:#daa84a; transform:translateY(-2px); }
+  @media (max-width:639px) {
+    .bloc-slide-right { display:none !important; }
+    .bloc-slide-content { flex-direction:column !important; justify-content:flex-end !important; padding:0 6% 5rem !important; gap:1.4rem !important; }
+    .bloc-closing-values { flex-direction:column !important; gap:0.4rem !important; }
+  }
+`;
+
+const SLIDES = [
+  {
+    bg: "https://d8j0ntlcm91z4.cloudfront.net/user_3EoK8Lekdk7fY8tTRff9rKP8Qo7/hf_20260607_135358_6591b93f-ca23-4c23-af59-2be3c9644ae8.png",
+    bgPos: "center 28%",
+    num: "01 / 04",
+    persona: "Brian Mwangi · SME Importer · Kamukunji, Nairobi",
+    headline: ["Toka Block", "na ", "BLOC."],
+    headlineEm: 1,
+    body: "Every morning, traders like Brian move goods across four borders. With BLOC, the compliance is handled, the payment is cleared, and the cargo moves — before the competition has filed their first form.",
+    tags: ["Compliance","Payments","Trade Finance"],
+    bubbleLabel: "BLOC Platform · Live",
+    bubbleRows: [
+      { k:"Status",   v:"Cargo Cleared ✓", cls:"green" },
+      { k:"IDF Ref",  v:"KE-2024-084521" },
+      { k:"Route",    v:"Mombasa → Nairobi" },
+      { k:"Cleared at", v:"14:32 EAT", cls:"gold" },
+    ],
+  },
+  {
+    bg: "https://d8j0ntlcm91z4.cloudfront.net/user_3EoK8Lekdk7fY8tTRff9rKP8Qo7/hf_20260607_140009_d0e760a2-8fff-4843-9cb6-11294cb3bcae.png",
+    bgPos: "center top",
+    num: "02 / 04",
+    persona: "Njeri Kamau · Head of Supply Chain · Upper Hill, Nairobi",
+    headline: ["The Building", "Bloc", " for", "Your Business."],
+    headlineEm: 1,
+    body: "Njeri manages trade across three continents. BLOC gives her a single platform where every corridor, every shipment, every compliance status is visible — and actionable — in real time.",
+    tags: ["Trade Intelligence","Risk Management","Analytics"],
+    bubbleLabel: "BLOC Dashboard · Live",
+    bubbleRows: [
+      { k:"Active Corridors", v:"3", cls:"gold" },
+      { k:"In Transit",       v:"12 Shipments" },
+      { k:"Compliance Alerts",v:"0 ✓", cls:"green" },
+      { k:"On-Time Rate",     v:"96.4%", cls:"green" },
+    ],
+  },
+  {
+    bg: "https://d8j0ntlcm91z4.cloudfront.net/user_3EoK8Lekdk7fY8tTRff9rKP8Qo7/hf_20260607_140043_f240b42d-d4e2-4b69-98cc-7cbde8ed013d.png",
+    bgPos: "center 28%",
+    num: "03 / 04",
+    persona: "Amos Ochieng · Licensed Clearing Agent · Mombasa ICD",
+    headline: ["Built", "on ", "BLOC."],
+    headlineEm: 1,
+    body: "Amos has cleared thousands of shipments. BLOC gives him the infrastructure to work faster — complete documentation, full audit trails, and no surprises at the gate. Every declaration. Defensible.",
+    tags: ["Customs Compliance","Documentation","Audit Trail"],
+    bubbleLabel: "BLOC Compliance · Live",
+    bubbleRows: [
+      { k:"Declaration", v:"Approved ✓", cls:"green" },
+      { k:"HS Code",     v:"8517.12.00" },
+      { k:"Duty Paid",   v:"KES 124,000" },
+      { k:"Audit Trail", v:"Complete", cls:"gold" },
+    ],
+  },
+  {
+    bg: "https://d8j0ntlcm91z4.cloudfront.net/user_3EoK8Lekdk7fY8tTRff9rKP8Qo7/hf_20260607_165234_9647ca80-133a-4fdc-b061-33b868e11aaf.png",
+    bgPos: "center 28%",
+    num: "04 / 04",
+    persona: "John Kariuki · Transport Operator · Mombasa–Nairobi Corridor",
+    headline: ["Your goods move.", "On time.", "On ", "BLOC."],
+    headlineEm: 2,
+    body: "The gate opens. The route is confirmed. The delivery window holds. For operators like John, BLOC is the infrastructure that makes predictable movement — across every border — possible.",
+    tags: ["Logistics Coordination","Real-time Tracking","Route Intelligence"],
+    bubbleLabel: "BLOC Logistics · Live",
+    bubbleRows: [
+      { k:"Gate Clearance", v:"Approved ✓", cls:"green" },
+      { k:"Vehicle Ref",    v:"TRK-KE-0847" },
+      { k:"Route",          v:"MSA Gate 3 → NBI" },
+      { k:"ETA Nairobi",    v:"06:00 EAT", cls:"gold" },
+    ],
+  },
 ];
 
-function Testimonials() {
-  const { dark } = useTheme();
-  const T = dark ? DARK : LIGHT;
-  const bp = useBreakpoint();
-  const [ref, visible] = useInView();
-  const cols = bp.isMobile ? "1fr" : "repeat(3,1fr)";
+const GOLD = "#C8943A";
+const vClr = { green:"#22C55E", gold:GOLD, default:"#fff" };
+
+function SlideHeadline({ lines, emIdx }) {
+  // emIdx = which line index gets the italic gold <em> treatment
   return (
-    <section ref={ref} style={{ background:T.sectionDeep, padding:px(bp), opacity:visible?1:0, transition:"opacity 0.7s, background 0.3s" }}>
-      <SectionLabel>Operator Stories</SectionLabel>
-      <SectionH2>What They Said<br />After Their First Shipment.</SectionH2>
-      <div style={{ display:"grid", gridTemplateColumns:cols, gap: bp.isMobile ? 12 : 2, marginTop: bp.isMobile ? 32 : 56 }}>
-        {TESTIMONIALS.map(t => (
-          <div key={t.name} style={{ background:T.testimonialBg, padding: bp.isMobile ? "24px 20px" : "32px 28px", borderTop:`3px solid ${C.rust}`, transition:"background 0.3s" }}>
-            <p style={{ fontSize:13, color:T.bodyColor, lineHeight:1.7, marginBottom:20, fontStyle:"italic" }}>{t.body}</p>
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <div style={{ width:40, height:40, background:T.sectionAlt, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Space Mono',monospace", fontSize:11, color:C.rust, flexShrink:0 }}>{t.initials}</div>
-              <div>
-                <div style={{ fontSize:13, fontWeight:500, color: dark ? C.cream : C.void }}>{t.name}</div>
-                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.bodyColor, marginTop:2 }}>{t.role}</div>
-                <span style={{ fontFamily:"'Space Mono',monospace", fontSize:8, letterSpacing:"0.1em", textTransform:"uppercase", padding:"2px 7px", border:`1px solid ${C.rust}`, borderRadius:2, color:C.rust, display:"inline-block", marginTop:6 }}>{t.pill}</span>
+    <h2 style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize:"clamp(2.2rem,4.6vw,3.9rem)", fontWeight:900, lineHeight:1.04, letterSpacing:"-0.015em", color:"#fff" }}>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {i === emIdx
+            ? <><span style={{ color:"#fff" }}>{line.replace(/BLOC\.$|BLOC\./, "")}</span><em style={{ color:GOLD, fontStyle:"italic" }}>BLOC.</em></>
+            : line
+          }
+          {i < lines.length - 1 && <br />}
+        </span>
+      ))}
+    </h2>
+  );
+}
+
+function StoriesSlider() {
+  const bp = useBreakpoint();
+  const TOTAL = SLIDES.length + 1; // +1 for closing slide
+  const DURATION = 7500;
+  const [current, setCurrent] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const rafRef = useRef(null);
+  const startRef = useRef(null);
+
+  // Inject slider CSS once
+  useEffect(() => {
+    const el = document.createElement("style");
+    el.textContent = SLIDER_CSS;
+    document.head.appendChild(el);
+    return () => document.head.removeChild(el);
+  }, []);
+
+  const goTo = (n) => {
+    setCurrent(((n % TOTAL) + TOTAL) % TOTAL);
+    setProgress(0);
+  };
+
+  // Timer
+  useEffect(() => {
+    if (paused) return;
+    cancelAnimationFrame(rafRef.current);
+    const elapsed = progress / 100 * DURATION;
+    startRef.current = performance.now() - elapsed;
+
+    const tick = () => {
+      const pct = Math.min((performance.now() - startRef.current) / DURATION * 100, 100);
+      setProgress(pct);
+      if (pct >= 100) {
+        setCurrent(c => (c + 1) % TOTAL);
+        setProgress(0);
+        startRef.current = performance.now();
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [paused, current]);
+
+  // Keyboard
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") goTo(current + 1);
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goTo(current - 1);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [current]);
+
+  // Touch swipe
+  const touchX = useRef(0);
+  const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
+  const onTouchEnd   = (e) => {
+    const diff = touchX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 48) goTo(diff > 0 ? current + 1 : current - 1);
+  };
+
+  const isClosing = current === SLIDES.length;
+
+  return (
+    <section
+      style={{ position:"relative", width:"100%", height: bp.isMobile ? "100svh" : "100vh", overflow:"hidden", background:"#07090C", userSelect:"none" }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Slides */}
+      {SLIDES.map((s, i) => (
+        <div key={i} className={`bloc-slide${current === i ? " active" : ""}`}>
+          <div className="bloc-slide-bg" style={{ backgroundImage:`url('${s.bg}')`, backgroundPosition: s.bgPos }} />
+          <div className="bloc-slide-overlay" />
+          <div className="bloc-slide-content" style={{ position:"relative", zIndex:3, display:"flex", alignItems:"flex-end", justifyContent:"space-between", height:"100%", padding: bp.isMobile ? "0 6% 5rem" : "0 5.5% 4rem 5.5%", gap: bp.isMobile ? "1.4rem" : "3rem" }}>
+            {/* Left */}
+            <div style={{ flex:"0 0 56%", display:"flex", flexDirection:"column", gap:"1.25rem" }}>
+              <div className="bloc-anim bloc-d1" style={{ display:"flex", alignItems:"center", gap:"0.7rem" }}>
+                <span style={{ fontSize:"0.67rem", letterSpacing:"0.2em", fontWeight:600, color:GOLD, fontFamily:"'Space Mono',monospace" }}>{s.num}</span>
+                <div style={{ width:26, height:1, background:GOLD, opacity:0.55 }} />
+                <span style={{ fontSize:"0.66rem", letterSpacing:"0.13em", textTransform:"uppercase", color:"rgba(255,255,255,0.55)", fontFamily:"'Space Mono',monospace" }}>{s.persona}</span>
+              </div>
+              <div className="bloc-anim bloc-d2">
+                <SlideHeadline lines={s.headline} emIdx={s.headlineEm} />
+              </div>
+              <p className="bloc-anim bloc-d3" style={{ fontSize:"clamp(0.88rem,1.15vw,1.02rem)", lineHeight:1.8, color:"rgba(255,255,255,0.72)", maxWidth:460 }}>{s.body}</p>
+              <div className="bloc-anim bloc-d4" style={{ display:"flex", gap:"0.45rem", flexWrap:"wrap" }}>
+                {s.tags.map(t => (
+                  <span key={t} style={{ fontSize:"0.62rem", letterSpacing:"0.15em", textTransform:"uppercase", color:GOLD, border:"1px solid rgba(200,148,58,0.32)", padding:"0.26rem 0.7rem", borderRadius:100, fontFamily:"'Space Mono',monospace" }}>{t}</span>
+                ))}
+              </div>
+            </div>
+            {/* Right — data bubble */}
+            <div className="bloc-slide-right" style={{ flex:"0 0 36%", display:"flex", justifyContent:"flex-end", alignItems:"flex-end" }}>
+              <div className="bloc-anim-r bloc-d3" style={{ background:"rgba(5,8,12,0.84)", backdropFilter:"blur(26px)", WebkitBackdropFilter:"blur(26px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"1.15rem 1.35rem", minWidth:216, maxWidth:262 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", paddingBottom:"0.75rem", marginBottom:"0.75rem", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
+                  <div className="bloc-status-dot" style={{ width:7, height:7, borderRadius:"50%", background:"#22C55E", flexShrink:0 }} />
+                  <span style={{ fontSize:"0.6rem", letterSpacing:"0.15em", textTransform:"uppercase", color:"rgba(255,255,255,0.55)", fontFamily:"'Space Mono',monospace" }}>{s.bubbleLabel}</span>
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:"0.44rem" }}>
+                  {s.bubbleRows.map((r, ri) => (
+                    <div key={ri} style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", gap:"0.75rem" }}>
+                      <span style={{ fontSize:"0.68rem", color:"rgba(255,255,255,0.55)", whiteSpace:"nowrap", fontFamily:"'Space Mono',monospace" }}>{r.k}</span>
+                      <span style={{ fontSize:"0.74rem", fontWeight:600, color: vClr[r.cls] || "#fff", textAlign:"right", fontFamily:"'Space Mono',monospace" }}>{r.v}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      ))}
+
+      {/* Closing slide */}
+      <div className={`bloc-slide${isClosing ? " active" : ""}`} style={{ background:"#07090C", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(200,148,58,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,148,58,0.04) 1px, transparent 1px)", backgroundSize:"58px 58px" }} />
+        <div style={{ position:"absolute", width:560, height:560, borderRadius:"50%", background:"radial-gradient(circle, rgba(200,148,58,0.07) 0%, transparent 68%)", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }} />
+        <div style={{ position:"relative", zIndex:3, display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:"1.9rem", padding: bp.isMobile ? "2rem 1.5rem" : "3rem 2rem", maxWidth:740, width:"100%" }}>
+          <div className="bloc-anim bloc-d1" style={{ fontWeight:700, fontSize:"clamp(3.5rem,9vw,6rem)", letterSpacing:"0.38em", color:GOLD, lineHeight:1, fontFamily:"'Bebas Neue',sans-serif" }}>BLOC</div>
+          <h2 className="bloc-anim bloc-d2" style={{ fontFamily:"'Playfair Display',serif", fontSize:"clamp(1.4rem,3.2vw,2.4rem)", fontWeight:700, lineHeight:1.25, color:"#fff" }}>
+            Infrastructure for African<br />Cross-Border Trade.
+          </h2>
+          <div className="bloc-anim bloc-d3" style={{ display:"flex", gap:"0.55rem", flexWrap:"wrap", justifyContent:"center" }}>
+            {["Compliance","Payments","Logistics","Trade Intelligence"].map(p => (
+              <span key={p} style={{ fontSize:"0.66rem", letterSpacing:"0.16em", textTransform:"uppercase", color:"rgba(255,255,255,0.55)", padding:"0.36rem 0.9rem", border:"1px solid rgba(255,255,255,0.07)", borderRadius:100, fontFamily:"'Space Mono',monospace" }}>{p}</span>
+            ))}
+          </div>
+          <p className="bloc-anim bloc-d4" style={{ fontSize:"1rem", color:"rgba(255,255,255,0.55)", letterSpacing:"0.04em" }}>
+            Built for the <strong style={{ color:"#fff" }}>Kenya corridor.</strong> Designed for the continent.
+          </p>
+          <div className="bloc-anim bloc-d5 bloc-closing-values" style={{ display:"flex", alignItems:"center", gap:"1.6rem" }}>
+            {["Predictable","Trustworthy","Repeatable"].map((v, i) => (
+              <span key={v} style={{ display:"contents" }}>
+                <span style={{ fontFamily:"'Playfair Display',serif", fontSize:"1.05rem", fontStyle:"italic", color:GOLD }}>{v}</span>
+                {i < 2 && <div style={{ width:4, height:4, borderRadius:"50%", background:"rgba(255,255,255,0.15)" }} />}
+              </span>
+            ))}
+          </div>
+          <button className="bloc-anim bloc-d6 bloc-closing-cta" onClick={() => goTo(0)} style={{ padding:"0.82rem 2.4rem", background:GOLD, color:"#07090C", fontWeight:700, fontSize:"0.8rem", letterSpacing:"0.14em", textTransform:"uppercase", border:"none", borderRadius:100, cursor:"pointer", transition:"all 0.28s ease", fontFamily:"'Space Mono',monospace" }}>
+            Begin the Journey →
+          </button>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ position:"absolute", bottom:0, left:0, height:2, background:GOLD, width:`${progress}%`, zIndex:30, transition:"width 0.1s linear" }} />
+
+      {/* Dot nav */}
+      <div style={{ position:"absolute", bottom:"1.9rem", left:"50%", transform:"translateX(-50%)", zIndex:20, display:"flex", alignItems:"center", gap:6 }}>
+        {Array.from({ length: TOTAL }).map((_, i) => (
+          <button key={i} className={`bloc-dot${current === i ? " active" : ""}`} onClick={() => goTo(i)} aria-label={`Go to slide ${i + 1}`} />
         ))}
       </div>
+
+      {/* Arrow nav */}
+      {!bp.isMobile && (
+        <>
+          <button className="bloc-arrow" onClick={() => goTo(current - 1)} aria-label="Previous" style={{ position:"absolute", top:"50%", left:"2%", transform:"translateY(-50%)", zIndex:20 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button className="bloc-arrow" onClick={() => goTo(current + 1)} aria-label="Next" style={{ position:"absolute", top:"50%", right:"2%", transform:"translateY(-50%)", zIndex:20 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </>
+      )}
     </section>
   );
 }
@@ -917,7 +1178,7 @@ export default function App() {
         <About />
         <Corridors />
         <Portals onSignIn={openSignIn} />
-        <Testimonials />
+        <StoriesSlider />
         <Pricing onSignIn={() => openSignIn()} />
         <LoginCTA onSignIn={() => openSignIn()} />
       </main>
